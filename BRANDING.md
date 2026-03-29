@@ -1,0 +1,107 @@
+# Dated — Branding Reference
+
+## Identity
+
+- **Product name:** Dated
+- **Tagline:** <!-- TODO -->
+- **Brand voice:** <!-- TODO: e.g. playful, romantic, witty -->
+
+---
+
+## Color Palette
+
+| Role             | Name        | Hex       | Notes                        |
+|------------------|-------------|-----------|------------------------------|
+| Primary          | Medium Purple |#734e97| Main brand purple           |
+| Primary Dark     | Dark Purple |#5a3a78| Hover states, headings (derived — darker of Primary) |
+| Primary Light    | Light Purple |#EAB8FF| Backgrounds, cards           |
+| Accent           | Sky Blue    | #83D6E6   | CTAs, highlights (complementary to purple) |
+| Neutral Dark     | Deep Plum   | #2D1F3D   | Body text (inferred — purple-tinted charcoal) |
+| Neutral Mid      | Muted Mauve | #8A7E9A   | Subtext, borders (inferred)  |
+| Neutral Light    | Off Grey    | #F0F0E9   | Page backgrounds             |
+| Error            | Rosy Red    | #E0536A   | (inferred — warm, pairs with purple) |
+| Success          | Sage Teal   | #4CAF8A   | (inferred — complements accent blue) |
+
+---
+
+## Typography
+
+| Role             | Font Family  | Weight      | Size (base) |
+|------------------|--------------|-------------|-------------|
+| Display / Hero   | Nunito       | 800 ExtraBold | 3rem–4.5rem |
+| Heading (H1–H3)  | Nunito       | 700 Bold    | 1.5rem–2.25rem |
+| Body             | Nunito       | 400 Regular | 1rem (16px) |
+| Caption / Label  | Nunito       | 500 Medium  | 0.75rem–0.875rem |
+| Monospace        | Geist Mono   | 400         | 0.875rem    |
+
+> **Why Nunito:** Round geometric terminals, very readable at all weights, friendly and approachable — matches the warm, romantic tone of the platform. Available free on Google Fonts.
+
+---
+
+## Logo
+
+- **Primary logo:** <!-- TODO: file path or Figma link -->
+- **Icon / Mark:** <!-- TODO -->
+- **Wordmark:** <!-- TODO -->
+- **Minimum size:** <!-- TODO -->
+- **Clear space rule:** <!-- TODO -->
+
+### Approved backgrounds
+- [ ] Purple primary
+- [ ] White
+- [ ] Dark/near-black
+
+---
+
+## Iconography
+
+- **Icon library:** <!-- TODO: e.g. Lucide, Heroicons, Phosphor -->
+- **Style:** <!-- TODO: outline / filled / duotone -->
+- **Stroke weight:** <!-- TODO -->
+
+---
+
+## Imagery & Photography
+
+- **Style:** <!-- TODO: e.g. warm candid, editorial, illustrated -->
+- **Subjects:** <!-- TODO: couples, food, atmosphere, etc. -->
+- **Avoid:** <!-- TODO -->
+
+---
+
+## Motion / Animation
+
+- **Easing:** <!-- TODO: e.g. ease-out cubic -->
+- **Duration scale:** <!-- TODO: fast 100ms / normal 200ms / slow 400ms -->
+- **Personality:** <!-- TODO: e.g. subtle, springy, cinematic -->
+
+---
+
+## Component Tokens
+
+These are live in `web/app/globals.css` as oklch values (Tailwind v4 format):
+
+```css
+/* Light mode */
+--background: oklch(0.96 0.01 100);   /* #F0F0E9 Off Grey */
+--primary:    oklch(0.44 0.145 295);  /* #734e97 Medium Purple */
+--secondary:  oklch(0.84 0.10 295);   /* #EAB8FF Light Purple */
+--accent:     oklch(0.83 0.08 200);   /* #83D6E6 Sky Blue */
+--foreground: oklch(0.20 0.04 295);   /* #2D1F3D Deep Plum */
+--muted-foreground: oklch(0.55 0.05 295); /* #8A7E9A Muted Mauve */
+--destructive: oklch(0.60 0.17 15);   /* #E0536A Rosy Red */
+
+/* Dark mode */
+--primary (dark): oklch(0.58 0.16 295);
+
+--radius: 0.75rem;
+--font-sans: Nunito, sans-serif;
+```
+
+---
+
+## Assets Location
+
+- Figma file: <!-- TODO -->
+- Logo exports: <!-- TODO: e.g. /assets/brand/ -->
+- Font files: <!-- TODO -->
