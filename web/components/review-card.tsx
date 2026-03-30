@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { StarRating } from '@/components/star-rating'
 
 export type ReviewCardData = {
+  id: string
   slug: string
   title: string
   body: string | null
