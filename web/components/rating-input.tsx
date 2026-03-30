@@ -6,10 +6,11 @@ type RatingInputProps = {
   name: string
   label: string
   required?: boolean
+  defaultValue?: number
 }
 
-export function RatingInput({ name, label, required }: RatingInputProps) {
-  const [value, setValue] = useState<number | null>(null)
+export function RatingInput({ name, label, required, defaultValue }: RatingInputProps) {
+  const [value, setValue] = useState<number | null>(defaultValue ?? null)
   const [hovered, setHovered] = useState<number | null>(null)
 
   const display = hovered ?? value

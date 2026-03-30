@@ -102,3 +102,32 @@ export async function signOut() {
   await supabase.auth.signOut()
   redirect('/')
 }
+
+export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const email = formData.get('email') as string
+  if (!email) return { fieldErrors: { email: 'Email is required' } }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://getdated.app'}/auth/reset-password`,
+  })
+
+  if (error) return { error: error.message }
+  redirect('/forgot-password?sent=1')
+}
+
+export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const password = formData.get('password') as string
+  const confirm  = formData.get('confirm') as string
+
+  if (!password || password.length < 8)
+    return { fieldErrors: { password: 'Password must be at least 8 characters' } }
+  if (password !== confirm)
+    return { fieldErrors: { confirm: 'Passwords do not match' } }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) return { error: error.message }
+
+  redirect('/?reset=1')
+}

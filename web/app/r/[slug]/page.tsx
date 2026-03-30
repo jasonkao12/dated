@@ -7,6 +7,7 @@ import { SiteHeader } from '@/components/site-header'
 import { StarRating } from '@/components/star-rating'
 import { ReactionBar } from '@/components/reaction-bar'
 import { ShareButton } from '@/components/share-button'
+import { ReviewOwnerActions } from '@/components/review-owner-actions'
 import type { Review, ReactionCounts } from '@/lib/types'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -167,7 +168,12 @@ export default async function ReviewPage({ params }: Props) {
               )}
             </div>
           </div>
-          <ShareButton url={reviewUrl} title={review.title} />
+          <div className="flex items-center gap-2">
+            <ShareButton url={reviewUrl} title={review.title} />
+            {user?.id === review.profiles.id && (
+              <ReviewOwnerActions reviewId={review.id} slug={review.slug} />
+            )}
+          </div>
         </div>
 
         {/* Overall rating */}
