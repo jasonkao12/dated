@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils'
 import type { User } from '@supabase/supabase-js'
 
 const NAV = [
-  { label: 'Plan a Date',  href: '/ideas'        },
-  { label: 'My Dates',     href: '/my-dates'     },
-  { label: 'My Locations', href: '/my-locations' },
+  { label: 'Plan a Date', href: '/ideas'  },
+  { label: 'Dates',       href: '/dates'  },
+  { label: 'Places',      href: '/places' },
 ]
 
 type Props = {

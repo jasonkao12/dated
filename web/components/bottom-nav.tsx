@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Sparkles, BookHeart, MapPin, User } from 'lucide-react'
+import { Sparkles, CalendarHeart, MapPin, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { label: 'Plan a Date',   href: '/ideas',        icon: Sparkles   },
-  { label: 'My Dates',      href: '/my-dates',     icon: BookHeart  },
-  { label: 'My Locations',  href: '/my-locations', icon: MapPin     },
-  { label: 'Profile',       href: '/profile',      icon: User       },
+  { label: 'Plan a Date', href: '/ideas',   icon: Sparkles      },
+  { label: 'Dates',       href: '/dates',   icon: CalendarHeart },
+  { label: 'Places',      href: '/places',  icon: MapPin        },
+  { label: 'Profile',     href: '/profile', icon: User          },
 ]
 
 export function BottomNav() {
