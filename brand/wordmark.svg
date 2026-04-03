@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <!-- Wordmark: "dated" in brand purple -->
+  <text
+    x="20"
+    y="92"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-weight="900"
+    font-size="88"
+    fill="#734e97"
+    letter-spacing="-3"
+  >dated</text>
+</svg>

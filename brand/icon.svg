@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Background: brand purple, rounded corners -->
+  <rect width="1024" height="1024" rx="224" fill="#734e97"/>
+  <!-- Lowercase "d" wordmark, white, bold, optically centered -->
+  <text
+    x="512"
+    y="736"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-weight="900"
+    font-size="700"
+    fill="#ffffff"
+    text-anchor="middle"
+    letter-spacing="-20"
+  >d</text>
+</svg>
