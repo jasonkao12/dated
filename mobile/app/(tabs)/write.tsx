@@ -7,7 +7,7 @@ import { router } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
-import { Colors } from '@/constants/Colors'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 const RATINGS = [
   { key: 'rating_overall', label: 'Overall', category: 'overall', required: true },
@@ -29,6 +29,8 @@ type RatingWithPhotosProps = {
 }
 
 function RatingWithPhotos({ label, required, value, onChange, photos, onAddPhotos, onRemovePhoto }: RatingWithPhotosProps) {
+  const Colors = useThemeColors()
+  const rStyles = makeRStyles(Colors)
   return (
     <View style={rStyles.wrap}>
       <Text style={rStyles.label}>
@@ -61,7 +63,7 @@ function RatingWithPhotos({ label, required, value, onChange, photos, onAddPhoto
   )
 }
 
-const rStyles = StyleSheet.create({
+function makeRStyles(Colors: any) { return StyleSheet.create({
   wrap: { marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '600', color: Colors.foreground, marginBottom: 6 },
   optional: { fontSize: 12, fontWeight: '400', color: Colors.muted },
@@ -79,9 +81,11 @@ const rStyles = StyleSheet.create({
   thumbWrap: { position: 'relative', marginRight: 8 },
   thumb: { width: 72, height: 72, borderRadius: 10 },
   removeBtn: { position: 'absolute', top: -6, right: -6 },
-})
+}) }
 
 export default function WriteScreen() {
+  const Colors = useThemeColors()
+  const styles = makeStyles(Colors)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [venueName, setVenueName] = useState('')
@@ -294,7 +298,7 @@ export default function WriteScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { paddingBottom: 40 },
   header: {
@@ -325,4 +329,4 @@ const styles = StyleSheet.create({
     paddingVertical: 16, alignItems: 'center',
   },
   submitBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-})
+}) }

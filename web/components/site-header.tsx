@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NavLinks } from '@/components/nav-links'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export async function SiteHeader() {
   const supabase = await createClient()
@@ -29,6 +30,7 @@ export async function SiteHeader() {
         {/* Desktop auth */}
         {!user ? (
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             <Link
               href="/login"
               className="rounded-lg px-4 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -44,6 +46,7 @@ export async function SiteHeader() {
           </div>
         ) : (
           <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
             <Link
               href="/write"
               className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground hover:bg-accent/80 transition-colors"

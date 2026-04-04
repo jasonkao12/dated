@@ -5,9 +5,11 @@ import {
 } from 'react-native'
 import { Link, router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
-import { Colors } from '@/constants/Colors'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 export default function SignupScreen() {
+  const Colors = useThemeColors()
+  const styles = makeStyles(Colors)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
@@ -95,7 +97,7 @@ export default function SignupScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   inner: { flexGrow: 1, justifyContent: 'center', padding: 28 },
   logo: {
@@ -122,4 +124,4 @@ const styles = StyleSheet.create({
   link: { color: Colors.primary, fontWeight: '600', fontSize: 14, textAlign: 'center' },
   row: { flexDirection: 'row', justifyContent: 'center', marginTop: 12 },
   dimText: { color: Colors.muted, fontSize: 14 },
-})
+}) }

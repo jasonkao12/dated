@@ -6,7 +6,7 @@ import {
 import { router, useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
-import { Colors } from '@/constants/Colors'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 // Set EXPO_PUBLIC_GOOGLE_PLACES_API_KEY in your .env to enable live search
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY ?? ''
@@ -24,6 +24,8 @@ type PlaceItem = {
 const PRICE = ['', '$', '$$', '$$$', '$$$$']
 
 export default function PlacesScreen() {
+  const Colors = useThemeColors()
+  const styles = makeStyles(Colors)
   const [places, setPlaces] = useState<PlaceItem[]>([])
   const [filtered, setFiltered] = useState<PlaceItem[]>([])
   const [search, setSearch] = useState('')
@@ -189,7 +191,7 @@ export default function PlacesScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
   header: {
@@ -243,4 +245,4 @@ const styles = StyleSheet.create({
   emptySub: { fontSize: 15, color: Colors.muted, marginBottom: 24, textAlign: 'center' },
   emptyBtn: { backgroundColor: Colors.primary, borderRadius: 100, paddingHorizontal: 24, paddingVertical: 14 },
   emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-})
+}) }

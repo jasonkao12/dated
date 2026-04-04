@@ -6,7 +6,7 @@ import {
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
-import { Colors } from '@/constants/Colors'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 type ReviewItem = {
   id: string
@@ -36,6 +36,8 @@ const CATEGORIES = [
 ]
 
 function CategorySection() {
+  const Colors = useThemeColors()
+  const catStyles = makeCatStyles(Colors)
   return (
     <View>
       {/* Featured: Choose a date for me */}
@@ -70,7 +72,7 @@ function CategorySection() {
   )
 }
 
-const catStyles = StyleSheet.create({
+function makeCatStyles(Colors: any) { return StyleSheet.create({
   featuredWrap: { paddingHorizontal: 16, paddingTop: 16 },
   featured: {
     backgroundColor: Colors.primary, borderRadius: 18,
@@ -93,9 +95,11 @@ const catStyles = StyleSheet.create({
   },
   chipEmoji: { fontSize: 22 },
   chipLabel: { fontSize: 12, fontWeight: '600', color: Colors.foreground, textAlign: 'center' },
-})
+}) }
 
 export default function FeedScreen() {
+  const Colors = useThemeColors()
+  const styles = makeStyles(Colors)
   const [reviews, setReviews] = useState<ReviewItem[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -177,7 +181,7 @@ export default function FeedScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
   header: {
@@ -197,4 +201,4 @@ const styles = StyleSheet.create({
   author: { fontSize: 13, color: Colors.muted, fontWeight: '600' },
   rating: { fontSize: 14, color: Colors.primary, fontWeight: '700' },
   empty: { textAlign: 'center', color: Colors.muted, marginTop: 40, fontSize: 15, paddingHorizontal: 16 },
-})
+}) }

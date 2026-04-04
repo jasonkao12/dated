@@ -7,7 +7,7 @@ import { router, useFocusEffect } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
-import { Colors } from '@/constants/Colors'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 type Profile = {
   username: string
@@ -48,6 +48,8 @@ type PlaceItem = {
 }
 
 export default function ProfileScreen() {
+  const Colors = useThemeColors()
+  const styles = makeStyles(Colors)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [reviews, setReviews] = useState<ReviewItem[]>([])
   const [places, setPlaces] = useState<PlaceItem[]>([])
@@ -360,7 +362,7 @@ export default function ProfileScreen() {
 
 const AVATAR_SIZE = 88
 
-const styles = StyleSheet.create({
+function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { paddingBottom: 48 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
@@ -434,4 +436,4 @@ const styles = StyleSheet.create({
 
   signOutBtn: { marginTop: 40, alignItems: 'center' },
   signOutText: { color: Colors.destructive, fontWeight: '600', fontSize: 15 },
-})
+}) }

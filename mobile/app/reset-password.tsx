@@ -7,23 +7,30 @@ import { router } from 'expo-router'
 import { supabase } from '@/lib/supabase'
 import { useThemeColors } from '@/hooks/useThemeColors'
 
-export default function ForgotPasswordScreen() {
+export default function ResetPasswordScreen() {
   const Colors = useThemeColors()
   const styles = makeStyles(Colors)
-  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleReset() {
+    if (password.length < 8) {
+      Alert.alert('Too short', 'Password must be at least 8 characters.')
+      return
+    }
+    if (password !== confirm) {
+      Alert.alert('Mismatch', 'Passwords do not match.')
+      return
+    }
     setLoading(true)
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'dated://reset-password',
-    })
+    const { error } = await supabase.auth.updateUser({ password })
     setLoading(false)
     if (error) {
       Alert.alert('Error', error.message)
     } else {
-      Alert.alert('Email sent', 'Check your inbox for a reset link.', [
-        { text: 'OK', onPress: () => router.back() },
+      Alert.alert('Password updated', 'You can now sign in with your new password.', [
+        { text: 'OK', onPress: () => router.replace('/(auth)/login') },
       ])
     }
   }
@@ -34,29 +41,30 @@ export default function ForgotPasswordScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.back}>
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.title}>Reset password</Text>
-        <Text style={styles.subtitle}>
-          Enter your email and we'll send you a reset link.
-        </Text>
+        <Text style={styles.title}>New password</Text>
+        <Text style={styles.subtitle}>Enter and confirm your new password.</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder="New password"
           placeholderTextColor={Colors.muted}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm password"
+          placeholderTextColor={Colors.muted}
+          value={confirm}
+          onChangeText={setConfirm}
+          secureTextEntry
         />
 
         <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading}>
           {loading
             ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.buttonText}>Send reset link</Text>
+            : <Text style={styles.buttonText}>Update password</Text>
           }
         </TouchableOpacity>
       </View>
@@ -66,9 +74,7 @@ export default function ForgotPasswordScreen() {
 
 function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  inner: { flex: 1, padding: 28, paddingTop: 60 },
-  back: { marginBottom: 32 },
-  backText: { color: Colors.primary, fontWeight: '600', fontSize: 15 },
+  inner: { flex: 1, padding: 28, paddingTop: 80 },
   title: { fontSize: 26, fontWeight: '800', color: Colors.foreground, marginBottom: 8 },
   subtitle: { fontSize: 15, color: Colors.mutedFg, marginBottom: 28, lineHeight: 22 },
   input: {

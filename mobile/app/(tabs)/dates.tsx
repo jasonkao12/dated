@@ -6,7 +6,7 @@ import {
 import { router, useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
-import { Colors } from '@/constants/Colors'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 type DateItem = {
   id: string
@@ -21,6 +21,8 @@ type DateItem = {
 }
 
 export default function DatesScreen() {
+  const Colors = useThemeColors()
+  const styles = makeStyles(Colors)
   const [dates, setDates] = useState<DateItem[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -126,7 +128,7 @@ export default function DatesScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
   header: {
@@ -160,4 +162,4 @@ const styles = StyleSheet.create({
   emptySub: { fontSize: 15, color: Colors.muted, marginBottom: 24, textAlign: 'center' },
   emptyBtn: { backgroundColor: Colors.primary, borderRadius: 100, paddingHorizontal: 24, paddingVertical: 14 },
   emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-})
+}) }

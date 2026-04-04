@@ -4,8 +4,9 @@ import {
   StyleSheet, ActivityIndicator, RefreshControl,
 } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
-import { Colors } from '@/constants/Colors'
+import { useThemeColors } from '@/hooks/useThemeColors'
 
 type ReviewItem = {
   id: string
@@ -18,6 +19,8 @@ type ReviewItem = {
 }
 
 export default function MyDatesScreen() {
+  const Colors = useThemeColors()
+  const styles = makeStyles(Colors)
   const [reviews, setReviews] = useState<ReviewItem[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -83,7 +86,15 @@ export default function MyDatesScreen() {
                 {item.places.name}{item.places.city ? ` · ${item.places.city}` : ''}
               </Text>
             )}
-            <Text style={styles.title}>{item.title}</Text>
+            <View style={styles.titleRow}>
+              <Text style={[styles.title, { flex: 1 }]}>{item.title}</Text>
+              <TouchableOpacity
+                onPress={() => router.push(`/edit-review/${item.id}`)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="pencil-outline" size={16} color="#9e8fb0" />
+              </TouchableOpacity>
+            </View>
             <View style={styles.meta}>
               {item.visited_on && (
                 <Text style={styles.date}>
@@ -117,7 +128,7 @@ export default function MyDatesScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
   header: {
@@ -137,7 +148,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border,
   },
   venue: { fontSize: 12, color: Colors.muted, fontWeight: '600', marginBottom: 4 },
-  title: { fontSize: 17, fontWeight: '800', color: Colors.foreground, marginBottom: 8 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  title: { fontSize: 17, fontWeight: '800', color: Colors.foreground },
   meta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   metaRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   date: { fontSize: 12, color: Colors.muted },
@@ -155,4 +167,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 14,
   },
   emptyBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-})
+}) }

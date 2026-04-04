@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { SiteHeader } from '@/components/site-header'
 import { ReviewCard, type ReviewCardData } from '@/components/review-card'
 import { StarRating } from '@/components/star-rating'
+import { DateHeatmap } from '@/components/date-heatmap'
+import { AchievementBadges } from '@/components/achievement-badges'
 
 type Props = { params: Promise<{ username: string }> }
 
@@ -42,7 +44,7 @@ export default async function UserProfilePage({ params }: Props) {
       review_tags ( date_tags ( id, label, emoji ) ),
       profiles!inner ( id, username, display_name, avatar_url )
     `)
-    .eq('profile_id', profile.id)
+    .eq('user_id', profile.id)
     .eq('is_public', true)
     .order('created_at', { ascending: false })
 
@@ -92,6 +94,11 @@ export default async function UserProfilePage({ params }: Props) {
   // Reviews from supabase won't have reaction_counts here; use a simplified approach
   const top3Reviews = reviews.slice(0, 3)
 
+  // Heatmap data — all visited_on dates (including ones without values for calendar display)
+  const visitedDates = reviews
+    .map(r => r.visited_on)
+    .filter((d): d is string => d !== null)
+
   const avatarInitial = (profile.display_name || profile.username).charAt(0).toUpperCase()
 
   return (
@@ -127,6 +134,15 @@ export default async function UserProfilePage({ params }: Props) {
             </div>
           </div>
 
+          {/* Achievements */}
+          <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Badges</h2>
+              <Link href="/settings/couple" className="text-xs text-primary hover:underline">Couple settings →</Link>
+            </div>
+            <AchievementBadges reviews={reviews as any} />
+          </div>
+
           {/* Stats highlight cards */}
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-2xl bg-card border border-border p-5 text-center">
@@ -144,6 +160,13 @@ export default async function UserProfilePage({ params }: Props) {
               <p className="mt-1 text-xs text-muted-foreground font-medium uppercase tracking-widest">Top Venue Type</p>
             </div>
           </div>
+
+          {/* Date Heatmap */}
+          {visitedDates.length > 0 && (
+            <div className="rounded-2xl bg-card border border-border p-5">
+              <DateHeatmap visitedDates={visitedDates} />
+            </div>
+          )}
 
           {reviews.length === 0 ? (
             <div className="rounded-2xl bg-card border border-border p-10 text-center space-y-3">

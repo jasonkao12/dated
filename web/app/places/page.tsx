@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { SiteHeader } from '@/components/site-header'
+import { PlacesMap } from '@/components/places-map'
 
 type PlaceWithStats = {
   id: string
@@ -9,6 +10,8 @@ type PlaceWithStats = {
   country: string | null
   place_type: string | null
   price_level: number | null
+  latitude: number | null
+  longitude: number | null
   reviewCount: number
   avgRating: number | null
   topSlug: string | null
@@ -24,7 +27,7 @@ export default async function PlacesPage() {
   const { data: raw } = await supabase
     .from('places')
     .select(`
-      id, name, city, country, place_type, price_level,
+      id, name, city, country, place_type, price_level, latitude, longitude,
       reviews!inner ( slug, rating_overall, is_public )
     `)
     .eq('reviews.is_public', true)
@@ -41,6 +44,8 @@ export default async function PlacesPage() {
       country: p.country,
       place_type: p.place_type,
       price_level: p.price_level,
+      latitude: p.latitude ?? null,
+      longitude: p.longitude ?? null,
       reviewCount: reviews.length,
       avgRating: ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null,
       topSlug: topReview?.slug ?? reviews[0]?.slug ?? null,
@@ -80,14 +85,19 @@ export default async function PlacesPage() {
           </div>
         </div>
 
-        {/* Google Places search — enabled once GOOGLE_PLACES_API_KEY is set */}
-        <div className="rounded-2xl border border-dashed border-border bg-card/50 px-5 py-4 text-sm text-muted-foreground flex items-center gap-3">
-          <span className="text-lg">🔍</span>
-          <span>
-            Live place search via Google Places API coming soon.
-            Add <code className="text-xs font-mono bg-muted px-1 rounded">GOOGLE_PLACES_API_KEY</code> to enable it.
-          </span>
-        </div>
+        {/* Map view — only rendered when places have coordinates */}
+        {(() => {
+          const mapped = places.filter(p => p.latitude !== null && p.longitude !== null).map(p => ({
+            id: p.id,
+            name: p.name,
+            city: p.city,
+            latitude: p.latitude!,
+            longitude: p.longitude!,
+            avgRating: p.avgRating,
+            topSlug: p.topSlug,
+          }))
+          return mapped.length > 0 ? <PlacesMap places={mapped} /> : null
+        })()}
 
         {places.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
