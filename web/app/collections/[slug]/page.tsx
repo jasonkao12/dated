@@ -39,7 +39,7 @@ export default async function CollectionPage({ params }: Props) {
     .map(item => item.reviews)
     .filter(Boolean) as unknown as ReviewCardData[]
 
-  const owner = collection.profiles as { username: string; display_name: string | null } | null
+  const owner = collection.profiles as unknown as { username: string; display_name: string | null } | null
   const isOwner = user?.id === collection.user_id
 
   return (

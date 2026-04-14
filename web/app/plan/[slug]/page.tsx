@@ -35,7 +35,7 @@ export default async function PlanPage({ params }: Props) {
   if (!plan.is_public && plan.user_id !== user?.id) notFound()
 
   const stops = [...((plan.date_stops as any[]) ?? [])].sort((a, b) => a.stop_order - b.stop_order)
-  const owner = plan.profiles as { username: string; display_name: string | null } | null
+  const owner = plan.profiles as unknown as { username: string; display_name: string | null } | null
   const isOwner = user?.id === plan.user_id
   const statusInfo = STATUS_LABEL[plan.status] ?? { emoji: '', label: plan.status }
   const planUrl = `https://getdated.app/plan/${slug}`

@@ -128,6 +128,13 @@ export function CoupleConnect({ userId }: { userId: string }) {
       setMyCode(null)
       setPartnerCode('')
       setSuccess('Linked! 💑')
+
+      // Notify partner
+      fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'couple_accepted', recipientId: codeRow.user_id }),
+      }).catch(() => {})
     })
   }
 

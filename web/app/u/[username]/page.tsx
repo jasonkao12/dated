@@ -6,6 +6,7 @@ import { ReviewCard, type ReviewCardData } from '@/components/review-card'
 import { StarRating } from '@/components/star-rating'
 import { DateHeatmap } from '@/components/date-heatmap'
 import { AchievementBadges } from '@/components/achievement-badges'
+import { FollowButton } from '@/components/follow-button'
 
 type Props = { params: Promise<{ username: string }> }
 
@@ -114,9 +115,12 @@ export default async function UserProfilePage({ params }: Props) {
                 {avatarInitial}
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-bold text-foreground">
-                  {profile.display_name || profile.username}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {profile.display_name || profile.username}
+                  </h1>
+                  <FollowButton profileId={profile.id} />
+                </div>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>
                 {profile.bio && (
                   <p className="mt-2 text-sm text-foreground/80">{profile.bio}</p>

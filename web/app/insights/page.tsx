@@ -20,7 +20,7 @@ export default async function InsightsPage() {
     .eq('user_id', user.id)
     .order('visited_on', { ascending: false })
 
-  const allReviews = (reviews ?? []) as {
+  const allReviews = (reviews ?? []) as unknown as {
     id: string; slug: string; title: string; body: string | null
     visited_on: string | null; rating_overall: number | null
     places: { name: string; city: string | null } | null

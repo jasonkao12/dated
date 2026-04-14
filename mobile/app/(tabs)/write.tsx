@@ -9,6 +9,27 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useThemeColors } from '@/hooks/useThemeColors'
 
+const CATEGORIES = [
+  { name: 'Restaurants',           emoji: '🍽️' },
+  { name: 'Cafes',                 emoji: '☕' },
+  { name: 'Nature & Outdoors',     emoji: '🌿' },
+  { name: 'Indoor Activities',     emoji: '🏛️' },
+  { name: 'Arts & Culture',        emoji: '🎨' },
+  { name: 'Games & Entertainment', emoji: '🎮' },
+  { name: 'Nightlife',             emoji: '🌙' },
+  { name: 'Wellness',              emoji: '🧘' },
+  { name: 'Day Trip',              emoji: '🌅' },
+  { name: 'Road Trip',             emoji: '🚗' },
+  { name: 'Vacation',              emoji: '✈️' },
+  { name: 'First Date',            emoji: '✨' },
+  { name: 'Anniversary',           emoji: '💍' },
+  { name: 'Romantic',              emoji: '🕯️' },
+  { name: 'Budget-friendly',       emoji: '💸' },
+  { name: 'Experiences',           emoji: '🌟' },
+]
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://getdated.app'
+
 const RATINGS = [
   { key: 'rating_overall', label: 'Overall', category: 'overall', required: true },
   { key: 'rating_ambiance', label: 'Ambiance', category: 'ambiance' },
@@ -103,7 +124,32 @@ export default function WriteScreen() {
   const [ratingPhotos, setRatingPhotos] = useState<Record<string, string[]>>({
     overall: [], ambiance: [], food: [], service: [], value: [], vibe: [],
   })
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [suggesting, setSuggesting] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  function toggleCategory(name: string) {
+    setSelectedCategories(prev =>
+      prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name]
+    )
+  }
+
+  async function suggestCategories() {
+    setSuggesting(true)
+    try {
+      const res = await fetch(`${API_URL}/api/ai/suggest-categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body, venue_name: venueName, venue_type: '' }),
+      })
+      const json = await res.json()
+      if (json.categories?.length) setSelectedCategories(json.categories)
+    } catch {
+      Alert.alert('AI Suggest failed', 'Could not reach the server.')
+    } finally {
+      setSuggesting(false)
+    }
+  }
 
   function setRating(key: string, val: number | null) {
     setRatings(r => ({ ...r, [key]: val }))
@@ -184,7 +230,7 @@ export default function WriteScreen() {
       .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 6)
 
     const { data: review, error } = await supabase.from('reviews').insert({
-      user_id: user.id,
+      profile_id: user.id,
       slug,
       title: title.trim(),
       body: body.trim() || null,
@@ -200,6 +246,19 @@ export default function WriteScreen() {
       return
     }
 
+    // Save categories
+    if (selectedCategories.length > 0) {
+      const { data: catRows } = await supabase
+        .from('categories')
+        .select('id, name')
+        .in('name', selectedCategories)
+      if (catRows?.length) {
+        await supabase.from('review_categories').insert(
+          catRows.map(c => ({ review_id: review.id, category_id: c.id }))
+        )
+      }
+    }
+
     await uploadReviewPhotos(user.id, review.id)
 
     setLoading(false)
@@ -210,6 +269,7 @@ export default function WriteScreen() {
     setTitle(''); setBody(''); setVenueName(''); setVenueCity(''); setVisitedOn('')
     setRatings({ rating_overall: null, rating_ambiance: null, rating_food: null, rating_service: null, rating_value: null, rating_vibe: null })
     setRatingPhotos({ overall: [], ambiance: [], food: [], service: [], value: [], vibe: [] })
+    setSelectedCategories([])
   }
 
   return (
@@ -259,6 +319,29 @@ export default function WriteScreen() {
           value={venueCity}
           onChangeText={setVenueCity}
         />
+
+        <View style={styles.sectionRow}>
+          <Text style={styles.section}>Categories</Text>
+          <TouchableOpacity onPress={suggestCategories} disabled={suggesting} style={styles.aiBtn}>
+            <Text style={styles.aiBtnText}>{suggesting ? '…' : '✨ AI Suggest'}</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.chips}>
+          {CATEGORIES.map(({ name, emoji }) => {
+            const selected = selectedCategories.includes(name)
+            return (
+              <TouchableOpacity
+                key={name}
+                onPress={() => toggleCategory(name)}
+                style={[styles.chip, selected && styles.chipSelected]}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.chipEmoji}>{emoji}</Text>
+                <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{name}</Text>
+              </TouchableOpacity>
+            )
+          })}
+        </View>
 
         <Text style={styles.section}>Ratings</Text>
         {RATINGS.map(r => (
@@ -324,6 +407,25 @@ function makeStyles(Colors: any) { return StyleSheet.create({
   },
   publicLabel: { fontSize: 15, fontWeight: '600', color: Colors.foreground },
   publicSub: { fontSize: 12, color: Colors.muted, marginTop: 2 },
+  sectionRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginTop: 20, marginBottom: 10,
+  },
+  aiBtn: {
+    backgroundColor: Colors.primary + '18', borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  aiBtnText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: Colors.card, borderRadius: 12, borderWidth: 1,
+    borderColor: Colors.border, paddingHorizontal: 10, paddingVertical: 7,
+  },
+  chipSelected: { borderColor: Colors.primary, backgroundColor: Colors.primary + '18' },
+  chipEmoji: { fontSize: 14 },
+  chipLabel: { fontSize: 12, fontWeight: '600', color: Colors.foreground },
+  chipLabelSelected: { color: Colors.primary },
   submitBtn: {
     backgroundColor: Colors.primary, borderRadius: 100,
     paddingVertical: 16, alignItems: 'center',

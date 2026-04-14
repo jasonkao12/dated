@@ -13,9 +13,11 @@ type Comment = {
 
 export function CommentsSection({
   reviewId,
+  reviewOwnerId,
   isAuthenticated,
 }: {
   reviewId: string
+  reviewOwnerId: string
   isAuthenticated: boolean
 }) {
   const supabase = createClient()
@@ -54,6 +56,17 @@ export function CommentsSection({
       if (!error && data) {
         setComments(prev => [...prev, data as unknown as Comment])
         setBody('')
+        // Notify review owner
+        fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'comment',
+            recipientId: reviewOwnerId,
+            reviewId,
+            body: body.trim(),
+          }),
+        }).catch(() => {})
       }
     })
   }

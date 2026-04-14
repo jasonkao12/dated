@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import type { ReactionCounts, ReactionType } from '@/lib/types'
 
@@ -14,12 +15,14 @@ const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
 
 type ReactionBarProps = {
   reviewId: string
+  reviewOwnerId: string
   counts: ReactionCounts
   isAuthenticated: boolean
 }
 
-export function ReactionBar({ reviewId, counts, isAuthenticated }: ReactionBarProps) {
+export function ReactionBar({ reviewId, reviewOwnerId, counts, isAuthenticated }: ReactionBarProps) {
   const router = useRouter()
+  const supabase = createClient()
   const [localCounts, setLocalCounts] = useState(counts)
   const [active, setActive] = useState<ReactionType | null>(null)
 
@@ -36,7 +39,40 @@ export function ReactionBar({ reviewId, counts, isAuthenticated }: ReactionBarPr
       [type]: wasActive ? Math.max(0, prev[type] - 1) : prev[type] + 1,
       ...(wasActive ? {} : active ? { [active]: Math.max(0, prev[active] - 1) } : {}),
     }))
-    // TODO: persist to Supabase once auth is wired up
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    if (wasActive) {
+      // Remove reaction
+      await supabase
+        .from('reactions')
+        .delete()
+        .eq('review_id', reviewId)
+        .eq('user_id', user.id)
+        .eq('reaction_type', type)
+    } else {
+      // Remove previous reaction if switching
+      if (active) {
+        await supabase
+          .from('reactions')
+          .delete()
+          .eq('review_id', reviewId)
+          .eq('user_id', user.id)
+          .eq('reaction_type', active)
+      }
+      // Insert new reaction
+      await supabase
+        .from('reactions')
+        .upsert({ review_id: reviewId, user_id: user.id, reaction_type: type })
+
+      // Notify review owner
+      fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'reaction', recipientId: reviewOwnerId, reviewId }),
+      }).catch(() => {})
+    }
   }
 
   return (

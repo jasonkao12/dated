@@ -259,6 +259,7 @@ export default async function ReviewPage({ params }: Props) {
           </p>
           <ReactionBar
             reviewId={review.id}
+            reviewOwnerId={review.profiles.id}
             counts={review.reaction_counts}
             isAuthenticated={!!user}
           />
@@ -266,7 +267,7 @@ export default async function ReviewPage({ params }: Props) {
 
         {/* Comments */}
         <div className="rounded-2xl bg-card border border-border p-5">
-          <CommentsSection reviewId={review.id} isAuthenticated={!!user} />
+          <CommentsSection reviewId={review.id} reviewOwnerId={review.profiles.id} isAuthenticated={!!user} />
         </div>
 
         {/* Sign-up CTA for unauthenticated users */}

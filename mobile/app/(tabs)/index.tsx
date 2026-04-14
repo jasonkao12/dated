@@ -19,30 +19,25 @@ type ReviewItem = {
   places: { name: string; city: string | null } | null
 }
 
-const CATEGORIES = [
-  { id: 'nature',      label: 'Nature & Outdoors',   emoji: '🌿' },
-  { id: 'indoors',     label: 'Indoor Activities',    emoji: '🏛️' },
-  { id: 'games',       label: 'Games',                emoji: '🎮' },
-  { id: 'restaurants', label: 'Restaurants',          emoji: '🍽️' },
-  { id: 'cafes',       label: 'Cafes',                emoji: '☕' },
-  { id: 'popular',     label: 'Popular Dates',        emoji: '⭐' },
-  { id: 'budget',      label: 'Budget-friendly',      emoji: '💸' },
-  { id: 'roadtrip',    label: 'Road Trip',            emoji: '🚗' },
-  { id: 'daytrip',     label: 'Day Trip',             emoji: '🌅' },
-  { id: 'vacation',    label: 'Vacation',             emoji: '✈️' },
-  { id: 'first-date',  label: 'First Date',           emoji: '✨' },
-  { id: 'anniversary', label: 'Anniversary',          emoji: '💍' },
-  { id: 'romantic',    label: 'Romantic Ambience',    emoji: '🕯️' },
-]
+type Category = { id: string; name: string; emoji: string }
 
-function CategorySection() {
+function CategorySection({
+  categories,
+  selectedId,
+  onSelect,
+}: {
+  categories: Category[]
+  selectedId: string | null
+  onSelect: (id: string | null) => void
+}) {
   const Colors = useThemeColors()
   const catStyles = makeCatStyles(Colors)
   return (
     <View>
       {/* Featured: Choose a date for me */}
       <View style={catStyles.featuredWrap}>
-        <TouchableOpacity style={catStyles.featured} activeOpacity={0.85}>
+        <TouchableOpacity style={catStyles.featured} activeOpacity={0.85}
+          onPress={() => router.push('/date-builder' as never)}>
           <Text style={catStyles.featuredEmoji}>🎲</Text>
           <View style={catStyles.featuredText}>
             <Text style={catStyles.featuredTitle}>Choose a date for me</Text>
@@ -59,10 +54,28 @@ function CategorySection() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={catStyles.chipScroll}
       >
-        {CATEGORIES.map(cat => (
-          <TouchableOpacity key={cat.id} style={catStyles.chip} activeOpacity={0.75}>
+        {/* All chip */}
+        <TouchableOpacity
+          key="all"
+          style={[catStyles.chip, selectedId === null && catStyles.chipSelected]}
+          activeOpacity={0.75}
+          onPress={() => onSelect(null)}
+        >
+          <Text style={catStyles.chipEmoji}>✨</Text>
+          <Text style={[catStyles.chipLabel, selectedId === null && catStyles.chipLabelSelected]}>All</Text>
+        </TouchableOpacity>
+
+        {categories.map(cat => (
+          <TouchableOpacity
+            key={cat.id}
+            style={[catStyles.chip, selectedId === cat.id && catStyles.chipSelected]}
+            activeOpacity={0.75}
+            onPress={() => onSelect(selectedId === cat.id ? null : cat.id)}
+          >
             <Text style={catStyles.chipEmoji}>{cat.emoji}</Text>
-            <Text style={catStyles.chipLabel}>{cat.label}</Text>
+            <Text style={[catStyles.chipLabel, selectedId === cat.id && catStyles.chipLabelSelected]}>
+              {cat.name}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -93,19 +106,32 @@ function makeCatStyles(Colors: any) { return StyleSheet.create({
     borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 10,
     alignItems: 'center', gap: 6, minWidth: 90,
   },
+  chipSelected: {
+    backgroundColor: Colors.primary + '18',
+    borderColor: Colors.primary,
+  },
   chipEmoji: { fontSize: 22 },
   chipLabel: { fontSize: 12, fontWeight: '600', color: Colors.foreground, textAlign: 'center' },
+  chipLabelSelected: { color: Colors.primary },
 }) }
 
 export default function FeedScreen() {
   const Colors = useThemeColors()
   const styles = makeStyles(Colors)
   const [reviews, setReviews] = useState<ReviewItem[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
-  async function fetchReviews() {
-    const { data } = await supabase
+  useEffect(() => {
+    supabase.from('categories').select('id, name, emoji').order('name').then(({ data }) => {
+      if (data) setCategories(data)
+    })
+  }, [])
+
+  async function fetchReviews(categoryId: string | null = null) {
+    let query = supabase
       .from('reviews')
       .select(`
         id, slug, title, body, visited_on, rating_overall,
@@ -116,25 +142,40 @@ export default function FeedScreen() {
       .order('created_at', { ascending: false })
       .limit(30)
 
+    if (categoryId) {
+      // Fetch review IDs that belong to this category
+      const { data: catLinks } = await supabase
+        .from('review_categories')
+        .select('review_id')
+        .eq('category_id', categoryId)
+
+      const ids = (catLinks ?? []).map((r: { review_id: string }) => r.review_id)
+      if (ids.length === 0) {
+        setReviews([])
+        return
+      }
+      query = query.in('id', ids)
+    }
+
+    const { data } = await query
     setReviews((data ?? []) as unknown as ReviewItem[])
   }
 
   useEffect(() => {
-    fetchReviews().finally(() => setLoading(false))
+    fetchReviews(null).finally(() => setLoading(false))
   }, [])
+
+  async function handleSelectCategory(id: string | null) {
+    setSelectedCategoryId(id)
+    setLoading(true)
+    await fetchReviews(id)
+    setLoading(false)
+  }
 
   async function onRefresh() {
     setRefreshing(true)
-    await fetchReviews()
+    await fetchReviews(selectedCategoryId)
     setRefreshing(false)
-  }
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={Colors.primary} />
-      </View>
-    )
   }
 
   return (
@@ -146,7 +187,13 @@ export default function FeedScreen() {
         data={reviews}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
-        ListHeaderComponent={<CategorySection />}
+        ListHeaderComponent={
+          <CategorySection
+            categories={categories}
+            selectedId={selectedCategoryId}
+            onSelect={handleSelectCategory}
+          />
+        }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -174,7 +221,11 @@ export default function FeedScreen() {
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No reviews yet. Be the first!</Text>
+          loading
+            ? <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
+            : <Text style={styles.empty}>
+                {selectedCategoryId ? 'No reviews in this category yet.' : 'No reviews yet. Be the first!'}
+              </Text>
         }
       />
     </View>
@@ -183,7 +234,6 @@ export default function FeedScreen() {
 
 function makeStyles(Colors: any) { return StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
   header: {
     paddingTop: 60, paddingBottom: 12, paddingHorizontal: 20,
     backgroundColor: Colors.card, borderBottomWidth: 1, borderBottomColor: Colors.border,
