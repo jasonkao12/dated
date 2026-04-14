@@ -7,6 +7,7 @@ import { StarRating } from '@/components/star-rating'
 import { DateHeatmap } from '@/components/date-heatmap'
 import { AchievementBadges } from '@/components/achievement-badges'
 import { FollowButton } from '@/components/follow-button'
+import { Settings } from 'lucide-react'
 
 type Props = { params: Promise<{ username: string }> }
 
@@ -22,6 +23,9 @@ export default async function UserProfilePage({ params }: Props) {
     .maybeSingle()
 
   if (!profile) notFound()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const isOwnProfile = user?.id === profile.id
 
   // 2. Fetch reviews with related data
   const { data: rawReviews } = await supabase
@@ -119,7 +123,17 @@ export default async function UserProfilePage({ params }: Props) {
                   <h1 className="text-2xl font-bold text-foreground">
                     {profile.display_name || profile.username}
                   </h1>
-                  <FollowButton profileId={profile.id} />
+                  {isOwnProfile ? (
+                    <Link
+                      href="/settings"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      aria-label="Settings"
+                    >
+                      <Settings size={16} />
+                    </Link>
+                  ) : (
+                    <FollowButton profileId={profile.id} />
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>
                 {profile.bio && (
