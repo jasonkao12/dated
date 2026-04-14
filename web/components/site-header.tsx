@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NavLinks } from '@/components/nav-links'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { NotificationBell } from '@/components/notification-bell'
 
 export async function SiteHeader() {
   const supabase = await createClient()
@@ -29,6 +31,7 @@ export async function SiteHeader() {
         {/* Desktop auth */}
         {!user ? (
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             <Link
               href="/login"
               className="rounded-lg px-4 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -50,6 +53,8 @@ export async function SiteHeader() {
             >
               + Write a review
             </Link>
+            <ThemeToggle />
+            <NotificationBell />
             <Link
               href={profile ? `/u/${profile.username}` : '/profile'}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -61,19 +66,26 @@ export async function SiteHeader() {
 
         {/* Mobile: write button or login */}
         {!user ? (
-          <Link
-            href="/signup"
-            className="md:hidden rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground"
-          >
-            Sign up
-          </Link>
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              href="/signup"
+              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground"
+            >
+              Sign up
+            </Link>
+          </div>
         ) : (
-          <Link
-            href="/write"
-            className="md:hidden rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-accent-foreground"
-          >
-            + Review
-          </Link>
+          <div className="md:hidden flex items-center gap-2">
+            <Link
+              href="/write"
+              className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-accent-foreground"
+            >
+              + Review
+            </Link>
+            <ThemeToggle />
+            <NotificationBell />
+          </div>
         )}
       </div>
     </header>

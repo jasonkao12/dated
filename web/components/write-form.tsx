@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { RatingInput } from '@/components/rating-input'
 import { createReview, type ReviewState } from '@/app/actions/review'
 
@@ -17,10 +17,62 @@ const DATE_TAGS = [
 
 const VENUE_TYPES = ['Restaurant', 'Bar', 'Café', 'Activity', 'Experience', 'Day Trip', 'Other']
 
+const CATEGORIES = [
+  { name: 'Restaurants',           emoji: '🍽️' },
+  { name: 'Cafes',                 emoji: '☕' },
+  { name: 'Nature & Outdoors',     emoji: '🌿' },
+  { name: 'Indoor Activities',     emoji: '🏛️' },
+  { name: 'Arts & Culture',        emoji: '🎨' },
+  { name: 'Games & Entertainment', emoji: '🎮' },
+  { name: 'Nightlife',             emoji: '🌙' },
+  { name: 'Wellness',              emoji: '🧘' },
+  { name: 'Day Trip',              emoji: '🌅' },
+  { name: 'Road Trip',             emoji: '🚗' },
+  { name: 'Vacation',              emoji: '✈️' },
+  { name: 'First Date',            emoji: '✨' },
+  { name: 'Anniversary',           emoji: '💍' },
+  { name: 'Romantic',              emoji: '🕯️' },
+  { name: 'Budget-friendly',       emoji: '💸' },
+  { name: 'Experiences',           emoji: '🌟' },
+]
+
 const inputClass = 'w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
 
 export function WriteForm() {
   const [state, formAction, isPending] = useActionState(createReview, {} as ReviewState)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [suggesting, setSuggesting] = useState(false)
+
+  function toggleCategory(name: string) {
+    setSelectedCategories(prev =>
+      prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name]
+    )
+  }
+
+  async function suggestCategories(e: React.MouseEvent) {
+    e.preventDefault()
+    const form = (e.currentTarget as HTMLElement).closest('form') as HTMLFormElement
+    const data = new FormData(form)
+    const title = data.get('title') as string
+    const body = data.get('body') as string
+    const venue_name = data.get('venue_name') as string
+    const venue_type = data.get('venue_type') as string
+
+    setSuggesting(true)
+    try {
+      const res = await fetch('/api/ai/suggest-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body, venue_name, venue_type }),
+      })
+      const json = await res.json()
+      if (json.categories?.length) {
+        setSelectedCategories(json.categories)
+      }
+    } finally {
+      setSuggesting(false)
+    }
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -82,7 +134,48 @@ export function WriteForm() {
         </div>
       </section>
 
-      {/* Section 3 — Ratings */}
+      {/* Section 3 — Categories */}
+      <section className="rounded-2xl bg-card border border-border p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Categories
+          </h2>
+          <button
+            onClick={suggestCategories}
+            disabled={suggesting}
+            className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors disabled:opacity-60"
+          >
+            {suggesting ? '...' : '✨ AI Suggest'}
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground">Pick categories that describe this date. Or use AI Suggest after filling in the details above.</p>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map(({ name, emoji }) => {
+            const selected = selectedCategories.includes(name)
+            return (
+              <button
+                key={name}
+                type="button"
+                onClick={() => toggleCategory(name)}
+                className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors ${
+                  selected
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-input bg-background text-foreground hover:border-primary/50'
+                }`}
+              >
+                <span>{emoji}</span>
+                <span>{name}</span>
+              </button>
+            )
+          })}
+        </div>
+        {/* Pass selected categories as hidden inputs */}
+        {selectedCategories.map(name => (
+          <input key={name} type="hidden" name="categories" value={name} />
+        ))}
+      </section>
+
+      {/* Section 4 — Ratings */}
       <section className="rounded-2xl bg-card border border-border p-6 space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Rate the experience

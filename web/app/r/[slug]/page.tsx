@@ -8,6 +8,8 @@ import { StarRating } from '@/components/star-rating'
 import { ReactionBar } from '@/components/reaction-bar'
 import { ShareButton } from '@/components/share-button'
 import { ReviewOwnerActions } from '@/components/review-owner-actions'
+import { CommentsSection } from '@/components/comments-section'
+import { AddToCollection } from '@/components/add-to-collection'
 import type { Review, ReactionCounts } from '@/lib/types'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -169,6 +171,7 @@ export default async function ReviewPage({ params }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <AddToCollection reviewId={review.id} isAuthenticated={!!user} />
             <ShareButton url={reviewUrl} title={review.title} />
             {user?.id === review.profiles.id && (
               <ReviewOwnerActions reviewId={review.id} slug={review.slug} />
@@ -256,9 +259,15 @@ export default async function ReviewPage({ params }: Props) {
           </p>
           <ReactionBar
             reviewId={review.id}
+            reviewOwnerId={review.profiles.id}
             counts={review.reaction_counts}
             isAuthenticated={!!user}
           />
+        </div>
+
+        {/* Comments */}
+        <div className="rounded-2xl bg-card border border-border p-5">
+          <CommentsSection reviewId={review.id} reviewOwnerId={review.profiles.id} isAuthenticated={!!user} />
         </div>
 
         {/* Sign-up CTA for unauthenticated users */}

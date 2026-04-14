@@ -6,9 +6,15 @@ import { cn } from '@/lib/utils'
 import type { User } from '@supabase/supabase-js'
 
 const NAV = [
-  { label: 'Plan a Date',  href: '/ideas'        },
-  { label: 'My Dates',     href: '/my-dates'     },
-  { label: 'My Locations', href: '/my-locations' },
+  { label: 'Feed',         href: '/dates'        },
+  { label: 'Trending',     href: '/trending'     },
+  { label: 'Places',       href: '/places'       },
+  { label: 'Date Builder', href: '/date-builder' },
+]
+
+const AUTH_NAV = [
+  { label: 'Collections', href: '/collections' },
+  { label: 'Insights',    href: '/insights'    },
 ]
 
 type Props = {
@@ -39,17 +45,36 @@ export function NavLinks({ user }: Props) {
         )
       })}
       {user && (
-        <Link
-          href="/profile"
-          className={cn(
-            'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
-            pathname.startsWith('/u/') || pathname === '/profile'
-              ? 'bg-secondary text-primary'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          )}
-        >
-          Profile
-        </Link>
+        <>
+          {AUTH_NAV.map(({ label, href }) => {
+            const active = pathname === href || pathname.startsWith(href + '/')
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
+                  active
+                    ? 'bg-secondary text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+              >
+                {label}
+              </Link>
+            )
+          })}
+          <Link
+            href="/profile"
+            className={cn(
+              'rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors',
+              pathname.startsWith('/u/') || pathname === '/profile'
+                ? 'bg-secondary text-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            )}
+          >
+            Profile
+          </Link>
+        </>
       )}
     </nav>
   )

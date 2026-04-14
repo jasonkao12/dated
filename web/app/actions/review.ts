@@ -38,6 +38,7 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
   const rating_vibe     = parseRating('rating_vibe')
 
   const tags = formData.getAll('tags') as string[]
+  const categories = formData.getAll('categories') as string[]
 
   // 3. Validate
   const fieldErrors: Record<string, string> = {}
@@ -106,7 +107,21 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
     }
   }
 
-  // 7. Redirect
+  // 7. Insert review_categories
+  if (categories.length > 0) {
+    const { data: catRows } = await supabase
+      .from('categories')
+      .select('id, name')
+      .in('name', categories)
+
+    if (catRows && catRows.length > 0) {
+      await supabase.from('review_categories').insert(
+        catRows.map((c) => ({ review_id: review.id, category_id: c.id }))
+      )
+    }
+  }
+
+  // 8. Redirect
   redirect(`/r/${slug}`)
 }
 
@@ -193,6 +208,16 @@ export async function updateReview(_prev: ReviewState, formData: FormData): Prom
     const { data: tagRows } = await supabase.from('date_tags').select('id, label').in('label', tags)
     if (tagRows?.length) {
       await supabase.from('review_tags').insert(tagRows.map(t => ({ review_id: reviewId, tag_id: t.id })))
+    }
+  }
+
+  // Sync categories: delete old, insert new
+  const categories = formData.getAll('categories') as string[]
+  await supabase.from('review_categories').delete().eq('review_id', reviewId)
+  if (categories.length > 0) {
+    const { data: catRows } = await supabase.from('categories').select('id, name').in('name', categories)
+    if (catRows?.length) {
+      await supabase.from('review_categories').insert(catRows.map(c => ({ review_id: reviewId, category_id: c.id })))
     }
   }
 

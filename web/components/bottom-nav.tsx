@@ -2,14 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Sparkles, BookHeart, MapPin, User } from 'lucide-react'
+import { CalendarHeart, MapPin, Map, FolderHeart, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { label: 'Plan a Date',   href: '/ideas',        icon: Sparkles   },
-  { label: 'My Dates',      href: '/my-dates',     icon: BookHeart  },
-  { label: 'My Locations',  href: '/my-locations', icon: MapPin     },
-  { label: 'Profile',       href: '/profile',      icon: User       },
+  { label: 'Dates',   href: '/dates',        icon: CalendarHeart },
+  { label: 'Places',  href: '/places',       icon: MapPin        },
+  { label: 'Build',   href: '/date-builder', icon: Map           },
+  { label: 'Saves',   href: '/collections',  icon: FolderHeart   },
+  { label: 'Profile', href: '/profile',      icon: User          },
 ]
 
 export function BottomNav() {
@@ -20,7 +21,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-border bg-card/95 backdrop-blur-sm">
-      <div className="grid grid-cols-4 h-16">
+      <div className="grid grid-cols-5 h-16">
         {TABS.map(({ label, href, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (

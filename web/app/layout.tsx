@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -34,10 +35,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${nunito.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col pb-16 md:pb-0">
-        {children}
-        <BottomNav />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+          <BottomNav />
+        </ThemeProvider>
       </body>
     </html>
   );
