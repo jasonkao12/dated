@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { NextResponse } from 'next/server'
+import { logApiUsage } from '@/lib/usage'
 
 const CATEGORIES = [
   'Restaurants', 'Cafes', 'Nature & Outdoors', 'Indoor Activities',
@@ -32,14 +33,37 @@ Return only the JSON array, no other text.`
   // Primary: gemini-3.1-flash-lite-preview — fastest and cheapest
   // Fallback: gemini-2.5-flash-lite — stable if preview is unavailable
   let text = ''
+  let modelUsed = 'gemini-3.1-flash-lite-preview'
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' })
     const result = await model.generateContent(prompt)
     text = result.response.text().trim()
+    const usage = result.response.usageMetadata
+    await logApiUsage({
+      service: 'gemini',
+      endpoint: 'suggest-categories',
+      tokens_in: usage?.promptTokenCount,
+      tokens_out: usage?.candidatesTokenCount,
+      cost_cents: usage ? ((usage.promptTokenCount ?? 0) / 1000 * 0.0075) + ((usage.candidatesTokenCount ?? 0) / 1000 * 0.03) : undefined,
+    })
   } catch {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
-    const result = await model.generateContent(prompt)
-    text = result.response.text().trim()
+    modelUsed = 'gemini-2.5-flash-lite'
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
+      const result = await model.generateContent(prompt)
+      text = result.response.text().trim()
+      const usage = result.response.usageMetadata
+      await logApiUsage({
+        service: 'gemini',
+        endpoint: 'suggest-categories (fallback)',
+        tokens_in: usage?.promptTokenCount,
+        tokens_out: usage?.candidatesTokenCount,
+        cost_cents: usage ? ((usage.promptTokenCount ?? 0) / 1000 * 0.0075) + ((usage.candidatesTokenCount ?? 0) / 1000 * 0.03) : undefined,
+      })
+    } catch {
+      await logApiUsage({ service: 'gemini', endpoint: 'suggest-categories', status: 'error' })
+      return NextResponse.json({ categories: [] })
+    }
   }
 
   let suggested: string[] = []

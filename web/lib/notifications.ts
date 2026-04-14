@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logApiUsage } from '@/lib/usage'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.FROM_EMAIL ?? 'Dated <hello@getdated.app>'
@@ -100,6 +101,7 @@ export async function sendNotification(payload: NotifyPayload) {
   const { subject, html } = buildEmail(type, actorName, body)
 
   await resend.emails.send({ from: FROM, to: email, subject, html })
+  await logApiUsage({ service: 'resend', endpoint: `notification:${type}` })
 
   // Mark as emailed
   // (the row was just inserted above — update the latest one)

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logApiUsage } from '@/lib/usage'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.FROM_EMAIL ?? 'Dated <hello@getdated.app>'
@@ -74,6 +75,7 @@ export async function POST(req: Request) {
       subject: `You have ${count} new notification${count > 1 ? 's' : ''} on Dated`,
       html,
     })
+    await logApiUsage({ service: 'resend', endpoint: 'digest' })
 
     // Mark as emailed
     const ids = notifications.map(n => n.id)
