@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
   const supabase = getSupabaseAdmin()
 
   // Find users who haven't received a welcome email yet
-  // Look back 2 hours to ensure we don't miss anyone between cron runs
-  const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+  // Look back 25 hours to ensure we don't miss anyone between daily cron runs
+  const cutoff = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString()
 
   const { data: profiles, error } = await supabase
     .from('profiles')
