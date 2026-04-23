@@ -16,9 +16,16 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
   }
 
   // 2. Extract fields
-  const venue_name = (formData.get('venue_name') as string | null)?.trim() ?? ''
-  const venue_city = (formData.get('venue_city') as string | null)?.trim() ?? ''
-  const venue_type = (formData.get('venue_type') as string | null)?.trim() ?? ''
+  const venue_name        = (formData.get('venue_name')        as string | null)?.trim() ?? ''
+  const venue_city        = (formData.get('venue_city')        as string | null)?.trim() ?? ''
+  const venue_type        = (formData.get('venue_type')        as string | null)?.trim() ?? ''
+  const google_place_id   = (formData.get('google_place_id')   as string | null)?.trim() || null
+  const venue_address     = (formData.get('venue_address')     as string | null)?.trim() || null
+  const venue_lat         = parseFloat(formData.get('venue_lat') as string) || null
+  const venue_lng         = parseFloat(formData.get('venue_lng') as string) || null
+  const venue_website     = (formData.get('venue_website')     as string | null)?.trim() || null
+  const venue_phone       = (formData.get('venue_phone')       as string | null)?.trim() || null
+  const venue_price_level = parseInt(formData.get('venue_price_level') as string) || null
   const title = (formData.get('title') as string | null)?.trim() ?? ''
   const body = (formData.get('body') as string | null)?.trim() ?? ''
   const visited_on = (formData.get('visited_on') as string | null)?.trim() || null
@@ -49,19 +56,44 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
   // 4. Upsert place
   let placeId: string | null = null
   if (venue_name) {
-    const { data: existingPlace } = await supabase
-      .from('places')
-      .select('id')
-      .eq('name', venue_name)
-      .eq('city', venue_city)
-      .maybeSingle()
+    // Prefer matching by google_place_id if available
+    const { data: existingPlace } = google_place_id
+      ? await supabase.from('places').select('id').eq('google_place_id', google_place_id).maybeSingle()
+      : await supabase.from('places').select('id').eq('name', venue_name).eq('city', venue_city ?? '').maybeSingle()
 
     if (existingPlace) {
+      // Update with latest Google data if we have it
+      if (google_place_id) {
+        await supabase.from('places').update({
+          name: venue_name,
+          address: venue_address,
+          city: venue_city || null,
+          place_type: venue_type || null,
+          lat: venue_lat,
+          lng: venue_lng,
+          website: venue_website,
+          phone: venue_phone,
+          price_level: venue_price_level,
+          last_refreshed_at: new Date().toISOString(),
+        }).eq('id', existingPlace.id)
+      }
       placeId = existingPlace.id
     } else {
       const { data: newPlace, error: placeError } = await supabase
         .from('places')
-        .insert({ name: venue_name, city: venue_city || null, place_type: venue_type || null })
+        .insert({
+          name: venue_name,
+          google_place_id,
+          address: venue_address,
+          city: venue_city || null,
+          place_type: venue_type || null,
+          lat: venue_lat,
+          lng: venue_lng,
+          website: venue_website,
+          phone: venue_phone,
+          price_level: venue_price_level,
+          last_refreshed_at: google_place_id ? new Date().toISOString() : null,
+        })
         .select('id')
         .single()
       if (placeError) return { error: 'Failed to save venue: ' + placeError.message }
@@ -85,7 +117,7 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
       rating_value,
       rating_vibe,
       place_id: placeId,
-      profile_id: user.id,
+      user_id: user.id,
       is_public: true,
     })
     .select('id')
@@ -130,11 +162,18 @@ export async function updateReview(_prev: ReviewState, formData: FormData): Prom
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'You must be logged in.' }
 
-  const reviewId   = formData.get('review_id') as string
-  const venue_name = (formData.get('venue_name') as string | null)?.trim() ?? ''
-  const venue_city = (formData.get('venue_city') as string | null)?.trim() ?? ''
-  const venue_type = (formData.get('venue_type') as string | null)?.trim() ?? ''
-  const title      = (formData.get('title') as string | null)?.trim() ?? ''
+  const reviewId          = formData.get('review_id') as string
+  const venue_name        = (formData.get('venue_name')        as string | null)?.trim() ?? ''
+  const venue_city        = (formData.get('venue_city')        as string | null)?.trim() ?? ''
+  const venue_type        = (formData.get('venue_type')        as string | null)?.trim() ?? ''
+  const google_place_id   = (formData.get('google_place_id')   as string | null)?.trim() || null
+  const venue_address     = (formData.get('venue_address')     as string | null)?.trim() || null
+  const venue_lat         = parseFloat(formData.get('venue_lat') as string) || null
+  const venue_lng         = parseFloat(formData.get('venue_lng') as string) || null
+  const venue_website     = (formData.get('venue_website')     as string | null)?.trim() || null
+  const venue_phone       = (formData.get('venue_phone')       as string | null)?.trim() || null
+  const venue_price_level = parseInt(formData.get('venue_price_level') as string) || null
+  const title             = (formData.get('title') as string | null)?.trim() ?? ''
   const body       = (formData.get('body') as string | null)?.trim() ?? ''
   const visited_on = (formData.get('visited_on') as string | null)?.trim() || null
   const isPublic   = formData.get('is_public') !== 'false'
@@ -163,19 +202,30 @@ export async function updateReview(_prev: ReviewState, formData: FormData): Prom
   // Upsert place
   let placeId: string | null = null
   if (venue_name) {
-    const { data: existingPlace } = await supabase
-      .from('places')
-      .select('id')
-      .eq('name', venue_name)
-      .eq('city', venue_city)
-      .maybeSingle()
+    const { data: existingPlace } = google_place_id
+      ? await supabase.from('places').select('id').eq('google_place_id', google_place_id).maybeSingle()
+      : await supabase.from('places').select('id').eq('name', venue_name).eq('city', venue_city ?? '').maybeSingle()
 
     if (existingPlace) {
+      if (google_place_id) {
+        await supabase.from('places').update({
+          name: venue_name, address: venue_address, city: venue_city || null,
+          place_type: venue_type || null, lat: venue_lat, lng: venue_lng,
+          website: venue_website, phone: venue_phone, price_level: venue_price_level,
+          last_refreshed_at: new Date().toISOString(),
+        }).eq('id', existingPlace.id)
+      }
       placeId = existingPlace.id
     } else {
       const { data: newPlace } = await supabase
         .from('places')
-        .insert({ name: venue_name, city: venue_city || null, place_type: venue_type || null })
+        .insert({
+          name: venue_name, google_place_id, address: venue_address,
+          city: venue_city || null, place_type: venue_type || null,
+          lat: venue_lat, lng: venue_lng, website: venue_website,
+          phone: venue_phone, price_level: venue_price_level,
+          last_refreshed_at: google_place_id ? new Date().toISOString() : null,
+        })
         .select('id')
         .single()
       placeId = newPlace?.id ?? null

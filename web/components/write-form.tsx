@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from 'react'
 import { RatingInput } from '@/components/rating-input'
+import { PlacesAutocomplete } from '@/components/places-autocomplete'
 import { createReview, type ReviewState } from '@/app/actions/review'
 
 const DATE_TAGS = [
@@ -82,15 +83,10 @@ export function WriteForm() {
           Where did you go?
         </h2>
         <div className="space-y-1">
-          <label htmlFor="venue_name" className="block text-sm font-semibold text-foreground">
-            Venue name <span className="text-destructive">*</span>
+          <label className="block text-sm font-semibold text-foreground">
+            Venue <span className="text-destructive">*</span>
           </label>
-          <input id="venue_name" name="venue_name" type="text" required placeholder="e.g. The Keefer Bar" className={inputClass} />
-          {state.fieldErrors?.venue_name && <p className="text-xs text-destructive">{state.fieldErrors.venue_name}</p>}
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="venue_city" className="block text-sm font-semibold text-foreground">City</label>
-          <input id="venue_city" name="venue_city" type="text" placeholder="e.g. Vancouver, BC" className={inputClass} />
+          <PlacesAutocomplete error={state.fieldErrors?.venue_name} />
         </div>
         <div className="space-y-1">
           <label htmlFor="venue_type" className="block text-sm font-semibold text-foreground">Venue type</label>
