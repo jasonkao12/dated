@@ -10,8 +10,8 @@ type PlaceWithStats = {
   country: string | null
   place_type: string | null
   price_level: number | null
-  latitude: number | null
-  longitude: number | null
+  lat: number | null
+  lng: number | null
   reviewCount: number
   avgRating: number | null
   topSlug: string | null
@@ -27,7 +27,7 @@ export default async function PlacesPage() {
   const { data: raw } = await supabase
     .from('places')
     .select(`
-      id, name, city, country, place_type, price_level, latitude, longitude,
+      id, name, city, country, place_type, price_level, lat, lng,
       reviews!inner ( slug, rating_overall, is_public )
     `)
     .eq('reviews.is_public', true)
@@ -44,8 +44,8 @@ export default async function PlacesPage() {
       country: p.country,
       place_type: p.place_type,
       price_level: p.price_level,
-      latitude: p.latitude ?? null,
-      longitude: p.longitude ?? null,
+      lat: p.lat ?? null,
+      lng: p.lng ?? null,
       reviewCount: reviews.length,
       avgRating: ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null,
       topSlug: topReview?.slug ?? reviews[0]?.slug ?? null,
@@ -87,12 +87,12 @@ export default async function PlacesPage() {
 
         {/* Map view — only rendered when places have coordinates */}
         {(() => {
-          const mapped = places.filter(p => p.latitude !== null && p.longitude !== null).map(p => ({
+          const mapped = places.filter(p => p.lat !== null && p.lng !== null).map(p => ({
             id: p.id,
             name: p.name,
             city: p.city,
-            latitude: p.latitude!,
-            longitude: p.longitude!,
+            lat: p.lat!,
+            lng: p.lng!,
             avgRating: p.avgRating,
             topSlug: p.topSlug,
           }))

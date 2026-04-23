@@ -3,19 +3,10 @@
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { Map, List } from 'lucide-react'
+import type { PlacePin } from '@/components/google-map'
 
-type PlacePin = {
-  id: string
-  name: string
-  city: string | null
-  latitude: number
-  longitude: number
-  avgRating: number | null
-  topSlug: string | null
-}
-
-// Lazy-load the actual map to avoid SSR issues with Leaflet
-const LeafletMap = dynamic(() => import('./leaflet-map'), {
+// Lazy-load to avoid SSR issues
+const GoogleMap = dynamic(() => import('./google-map').then(m => m.GoogleMap), {
   ssr: false,
   loading: () => (
     <div className="h-[500px] rounded-2xl bg-muted animate-pulse flex items-center justify-center">
@@ -51,7 +42,7 @@ export function PlacesMap({ places }: { places: PlacePin[] }) {
         </div>
       </div>
 
-      {view === 'map' && <LeafletMap places={places} />}
+      {view === 'map' && <GoogleMap places={places} />}
     </div>
   )
 }

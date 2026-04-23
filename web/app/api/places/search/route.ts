@@ -25,15 +25,12 @@ export async function GET(req: NextRequest) {
       locationBias: {
         circle: {
           center: { latitude: VANCOUVER_LAT, longitude: VANCOUVER_LNG },
-          radius: 100000, // 100km — covers Lower Mainland + Sea to Sky + Okanagan edge
+          radius: 50000, // 50km max allowed by Places API (New)
         },
       },
-      // Bias toward places couples would visit on a date
+      // Max 5 types allowed by Places API (New)
       includedPrimaryTypes: [
-        'restaurant', 'bar', 'cafe', 'bakery', 'night_club',
-        'tourist_attraction', 'park', 'art_gallery', 'museum',
-        'movie_theater', 'bowling_alley', 'spa', 'lodging',
-        'amusement_park', 'campground', 'establishment',
+        'restaurant', 'bar', 'cafe', 'tourist_attraction', 'establishment',
       ],
     }),
   })

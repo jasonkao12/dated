@@ -10,6 +10,7 @@ import { ShareButton } from '@/components/share-button'
 import { ReviewOwnerActions } from '@/components/review-owner-actions'
 import { CommentsSection } from '@/components/comments-section'
 import { AddToCollection } from '@/components/add-to-collection'
+import { VenueMap } from '@/components/venue-map'
 import type { Review, ReactionCounts } from '@/lib/types'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -24,7 +25,7 @@ async function getReview(slug: string): Promise<Review | null> {
       rating_overall, rating_ambiance, rating_food, rating_service, rating_value, rating_vibe,
       is_public, view_count, created_at,
       profiles ( id, username, display_name, avatar_url, bio ),
-      places ( id, name, address, city, country, place_type, price_level, website ),
+      places ( id, name, address, city, country, place_type, price_level, website, lat, lng ),
       review_photos ( id, storage_path, alt_text, sort_order ),
       review_tags ( date_tags ( id, label, emoji ) )
     `)
@@ -249,6 +250,30 @@ export default async function ReviewPage({ params }: Props) {
                 )
               })}
             </div>
+          </div>
+        )}
+
+        {/* Venue map */}
+        {venue && (venue as any).lat && (venue as any).lng && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Location
+            </p>
+            <VenueMap
+              lat={(venue as any).lat}
+              lng={(venue as any).lng}
+              name={venue.name}
+            />
+            {venue.address && (
+              <a
+                href={`https://maps.google.com/?q=${encodeURIComponent(venue.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                {venue.address} ↗
+              </a>
+            )}
           </div>
         )}
 

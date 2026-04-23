@@ -187,13 +187,13 @@ export function PlacesAutocomplete({ initialSelected, onSelect, onClear, error }
 
       {error && <p className="text-xs text-destructive">{error}</p>}
 
-      {open && suggestions.length > 0 && (
+      {open && (suggestions.length > 0 || (!searching && query.length >= 2)) && (
         <ul className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
           {suggestions.map(s => (
             <li key={s.placeId}>
               <button
                 type="button"
-                onMouseDown={e => e.preventDefault()} // prevent blur before click
+                onMouseDown={e => e.preventDefault()}
                 onClick={() => handleSelect(s)}
                 className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
               >
@@ -202,6 +202,34 @@ export function PlacesAutocomplete({ initialSelected, onSelect, onClear, error }
               </button>
             </li>
           ))}
+          {/* Manual entry fallback — always shown when there's a typed query */}
+          {!searching && query.length >= 2 && (
+            <li className="border-t border-border">
+              <button
+                type="button"
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => {
+                  setOpen(false)
+                  setSelected({
+                    googlePlaceId: '',
+                    name: query,
+                    address: '',
+                    city: '',
+                    lat: null,
+                    lng: null,
+                    website: null,
+                    phone: null,
+                    priceLevel: null,
+                    types: [],
+                  })
+                }}
+                className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
+              >
+                <p className="text-sm font-medium text-foreground">Use &ldquo;{query}&rdquo;</p>
+                <p className="text-xs text-muted-foreground">Add manually — not on Google Maps</p>
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </div>
