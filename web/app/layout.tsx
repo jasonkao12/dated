@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -42,6 +43,12 @@ export default function RootLayout({
           {children}
           <BottomNav />
         </ThemeProvider>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6314572368422332"
+          crossOrigin="anonymous"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
