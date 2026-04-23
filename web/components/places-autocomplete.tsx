@@ -22,6 +22,8 @@ type PlaceDetails = {
 }
 
 type Props = {
+  /** Pre-fill with an already-selected place (edit mode) */
+  initialSelected?: Partial<PlaceDetails> & { name: string }
   /** Called when a place is selected and details are loaded */
   onSelect?: (place: PlaceDetails) => void
   /** Called when selection is cleared */
@@ -41,12 +43,27 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 
-export function PlacesAutocomplete({ onSelect, onClear, error }: Props) {
-  const [query, setQuery] = useState('')
+export function PlacesAutocomplete({ initialSelected, onSelect, onClear, error }: Props) {
+  const [query, setQuery] = useState(initialSelected?.name ?? '')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [searching, setSearching] = useState(false)
   const [loadingDetails, setLoadingDetails] = useState(false)
-  const [selected, setSelected] = useState<PlaceDetails | null>(null)
+  const [selected, setSelected] = useState<PlaceDetails | null>(
+    initialSelected
+      ? {
+          googlePlaceId: initialSelected.googlePlaceId ?? '',
+          name: initialSelected.name,
+          address: initialSelected.address ?? '',
+          city: initialSelected.city ?? '',
+          lat: initialSelected.lat ?? null,
+          lng: initialSelected.lng ?? null,
+          website: initialSelected.website ?? null,
+          phone: initialSelected.phone ?? null,
+          priceLevel: initialSelected.priceLevel ?? null,
+          types: initialSelected.types ?? [],
+        }
+      : null
+  )
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const debouncedQuery = useDebounce(query, 300)

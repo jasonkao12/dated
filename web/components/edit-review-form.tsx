@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import { updateReview, type ReviewState } from '@/app/actions/review'
 import { RatingInput } from '@/components/rating-input'
+import { PlacesAutocomplete } from '@/components/places-autocomplete'
 
 const DATE_TAGS = [
   { label: 'First Date',       emoji: '✨' },
@@ -20,6 +21,9 @@ const VENUE_TYPES = ['Restaurant', 'Bar', 'Café', 'Activity', 'Experience', 'Da
 type DefaultValues = {
   title: string; body: string; visited_on: string; is_public: boolean
   venue_name: string; venue_city: string; venue_type: string
+  venue_google_place_id: string; venue_address: string
+  venue_lat: number | null; venue_lng: number | null
+  venue_website: string; venue_phone: string; venue_price_level: number | null
   rating_overall: number | null; rating_ambiance: number | null
   rating_food: number | null; rating_service: number | null
   rating_value: number | null; rating_vibe: number | null
@@ -40,13 +44,21 @@ export function EditReviewForm({ reviewId, defaultValues: d }: { reviewId: strin
       <section className="rounded-2xl bg-card border border-border p-6 space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Where did you go?</h2>
         <div className="space-y-1">
-          <label htmlFor="venue_name" className="block text-sm font-semibold text-foreground">Venue name <span className="text-destructive">*</span></label>
-          <input id="venue_name" name="venue_name" type="text" required defaultValue={d.venue_name} className={inputClass} />
-          {state.fieldErrors?.venue_name && <p className="text-xs text-destructive">{state.fieldErrors.venue_name}</p>}
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="venue_city" className="block text-sm font-semibold text-foreground">City</label>
-          <input id="venue_city" name="venue_city" type="text" defaultValue={d.venue_city} className={inputClass} />
+          <label className="block text-sm font-semibold text-foreground">Venue <span className="text-destructive">*</span></label>
+          <PlacesAutocomplete
+            initialSelected={d.venue_name ? {
+              googlePlaceId: d.venue_google_place_id,
+              name: d.venue_name,
+              address: d.venue_address || d.venue_city,
+              city: d.venue_city,
+              lat: d.venue_lat,
+              lng: d.venue_lng,
+              website: d.venue_website || null,
+              phone: d.venue_phone || null,
+              priceLevel: d.venue_price_level,
+            } : undefined}
+            error={state.fieldErrors?.venue_name}
+          />
         </div>
         <div className="space-y-1">
           <label htmlFor="venue_type" className="block text-sm font-semibold text-foreground">Venue type</label>

@@ -17,7 +17,7 @@ export default async function EditReviewPage({ params }: Props) {
       id, slug, title, body, visited_on, is_public,
       rating_overall, rating_ambiance, rating_food, rating_service, rating_value, rating_vibe,
       user_id,
-      places ( name, city, place_type ),
+      places ( name, city, place_type, google_place_id, address, lat, lng, website, phone, price_level ),
       review_tags ( date_tags ( label ) )
     `)
     .eq('slug', slug)
@@ -26,7 +26,12 @@ export default async function EditReviewPage({ params }: Props) {
   if (!review) notFound()
   if (review.user_id !== user.id) redirect(`/r/${slug}`)
 
-  const place = review.places as unknown as { name: string; city: string | null; place_type: string | null } | null
+  const place = review.places as unknown as {
+    name: string; city: string | null; place_type: string | null
+    google_place_id: string | null; address: string | null
+    lat: number | null; lng: number | null
+    website: string | null; phone: string | null; price_level: number | null
+  } | null
   const tags  = (review.review_tags as unknown as { date_tags: { label: string } }[]).map(rt => rt.date_tags.label)
 
   return (
@@ -48,6 +53,13 @@ export default async function EditReviewPage({ params }: Props) {
               venue_name:     place?.name ?? '',
               venue_city:     place?.city ?? '',
               venue_type:     place?.place_type ?? '',
+              venue_google_place_id: place?.google_place_id ?? '',
+              venue_address:  place?.address ?? '',
+              venue_lat:      place?.lat ?? null,
+              venue_lng:      place?.lng ?? null,
+              venue_website:  place?.website ?? '',
+              venue_phone:    place?.phone ?? '',
+              venue_price_level: place?.price_level ?? null,
               rating_overall:  review.rating_overall,
               rating_ambiance: review.rating_ambiance,
               rating_food:     review.rating_food,
