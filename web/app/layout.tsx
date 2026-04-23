@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     siteName: "Dated",
     type: "website",
   },
+  other: {
+    "google-adsense-account": "ca-pub-6314572368422332",
+  },
 };
 
 export default function RootLayout({
@@ -47,7 +50,7 @@ export default function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6314572368422332"
           crossOrigin="anonymous"
-          strategy="lazyOnload"
+          strategy="afterInteractive"
         />
       </body>
     </html>
