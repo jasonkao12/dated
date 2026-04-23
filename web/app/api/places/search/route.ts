@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
   if (!res.ok) {
     const err = await res.text()
     await logApiUsage({ service: 'google_places', endpoint: 'autocomplete', status: 'error', metadata: { error: err } })
-    return NextResponse.json({ error: 'Places API error' }, { status: 502 })
+    return NextResponse.json({ error: 'Places API error', detail: err }, { status: 502 })
   }
 
   const data = await res.json()
