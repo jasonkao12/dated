@@ -3,6 +3,7 @@ import { Nunito, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
+import { SiteFooter } from "@/components/site-footer";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const nunito = Nunito({
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col pb-16 md:pb-0">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
+          <SiteFooter />
           <BottomNav />
         </ThemeProvider>
         <Script
