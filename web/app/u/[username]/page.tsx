@@ -55,6 +55,18 @@ export default async function UserProfilePage({ params }: Props) {
 
   const reviews = (rawReviews ?? []) as unknown as ReviewCardData[]
 
+  // 3. Fetch date plans (only for own profile)
+  let datePlans: { id: string; title: string; slug: string; status: string; visited_on: string | null; date_stops: { count: number }[] }[] = []
+  if (isOwnProfile) {
+    const { data: plans } = await supabase
+      .from('date_plans')
+      .select('id, title, slug, status, visited_on, date_stops(count)')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    datePlans = (plans ?? []) as typeof datePlans
+  }
+
   // 3. Aggregate stats
   const reviewCount = reviews.length
   const ratingsWithValue = reviews.filter((r) => r.rating_overall !== null)
@@ -184,6 +196,59 @@ export default async function UserProfilePage({ params }: Props) {
             <div className="rounded-2xl bg-card border border-border p-5">
               <DateHeatmap visitedDates={visitedDates} />
             </div>
+          )}
+
+          {/* My Date Plans — owner only */}
+          {isOwnProfile && datePlans.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">My Date Plans</h2>
+                <Link href="/date-builder" className="text-xs text-primary hover:underline">See all →</Link>
+              </div>
+              <div className="space-y-2">
+                {datePlans.map(plan => {
+                  const stopCount = plan.date_stops?.[0]?.count ?? 0
+                  const isCompleted = plan.status === 'completed'
+                  const statusEmoji = plan.status === 'planned' ? '📅' : plan.status === 'completed' ? '✅' : '💡'
+                  const visitedDate = plan.visited_on
+                    ? new Date(plan.visited_on).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : null
+                  return (
+                    <div key={plan.id} className={`flex items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 ${isCompleted ? 'border-primary/30' : 'border-border'}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm shrink-0">{statusEmoji}</span>
+                        <div className="min-w-0">
+                          <Link href={`/plan/${plan.slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors truncate block">
+                            {plan.title}
+                          </Link>
+                          <p className="text-xs text-muted-foreground">
+                            {stopCount} {stopCount === 1 ? 'stop' : 'stops'}{visitedDate ? ` · ${visitedDate}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      {isCompleted && (
+                        <Link
+                          href="/write"
+                          className="shrink-0 flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors whitespace-nowrap"
+                        >
+                          ✍️ Write review
+                        </Link>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {isOwnProfile && datePlans.length === 0 && (
+            <section className="rounded-2xl border border-dashed border-border bg-card p-6 text-center space-y-3">
+              <p className="text-2xl">🗺️</p>
+              <p className="text-sm font-semibold text-foreground">No date plans yet</p>
+              <Link href="/date-builder/new" className="inline-block rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors">
+                Plan a date
+              </Link>
+            </section>
           )}
 
           {reviews.length === 0 ? (

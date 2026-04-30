@@ -13,6 +13,7 @@ const NAV = [
 ]
 
 const AUTH_NAV = [
+  { label: 'My Dates',    href: '/my-dates'    },
   { label: 'Collections', href: '/collections' },
   { label: 'Insights',    href: '/insights'    },
 ]

@@ -83,11 +83,22 @@ export default async function DateBuilderPage() {
                       )}
                     </div>
                   </div>
-                  {plan.rating_overall !== null && (
-                    <div className="text-lg font-black text-primary shrink-0">
-                      ★ {Number(plan.rating_overall).toFixed(1)}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {plan.status === 'completed' && (
+                      <Link
+                        href="/write"
+                        onClick={e => e.stopPropagation()}
+                        className="rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+                      >
+                        ✍️ Review
+                      </Link>
+                    )}
+                    {plan.rating_overall !== null && (
+                      <div className="text-lg font-black text-primary">
+                        ★ {Number(plan.rating_overall).toFixed(1)}
+                      </div>
+                    )}
+                  </div>
                 </Link>
               )
             })}

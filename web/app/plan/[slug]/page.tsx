@@ -143,6 +143,22 @@ export default async function PlanPage({ params }: Props) {
           </div>
         )}
 
+        {/* Review prompt — completed plans, owner only */}
+        {isOwner && plan.status === 'completed' && (
+          <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <p className="font-bold text-foreground">How was this date? ✨</p>
+              <p className="text-sm text-muted-foreground">Write a review and share what made it special.</p>
+            </div>
+            <Link
+              href="/write"
+              className="shrink-0 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap"
+            >
+              ✍️ Write a review
+            </Link>
+          </div>
+        )}
+
         {/* Body notes */}
         {plan.body && (
           <div className="rounded-2xl bg-card border border-border p-5">
