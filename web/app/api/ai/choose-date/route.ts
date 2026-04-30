@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { logApiUsage } from '@/lib/usage'
+import { createClient } from '@/lib/supabase/server'
 
 // TODO: Sponsored placement — inject partner venues here before Places validation
 // when a venue's type + neighbourhood matches a sponsor's criteria.
@@ -106,10 +107,68 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'AI not configured' }, { status: 500 })
   }
 
-  // 1. Weather
-  const weather = await getWeather()
+  // 1. Weather + user preferences (in parallel)
+  const supabase = await createClient()
+  const [weather, { data: { user } }] = await Promise.all([
+    getWeather(),
+    supabase.auth.getUser(),
+  ])
+
+  let userPrefs: Record<string, any> = {}
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('preferences')
+      .eq('id', user.id)
+      .single()
+    if (profile?.preferences) userPrefs = profile.preferences
+  }
+
+  // Build preferences context string for the prompt
+  const prefsLines: string[] = []
+  if (userPrefs.transport_mode) {
+    const maxMins = userPrefs.max_travel_minutes ?? 15
+    prefsLines.push(`- Transport: ${userPrefs.transport_mode} — max ${maxMins} min between stops`)
+  }
+  if (userPrefs.home_neighbourhood && userPrefs.home_neighbourhood !== 'Anywhere' && neighbourhood === 'Anywhere') {
+    prefsLines.push(`- User's home base: ${userPrefs.home_neighbourhood} (prefer nearby if possible)`)
+  }
+  if (userPrefs.travel_beyond_vancouver === false) {
+    prefsLines.push(`- Keep within Vancouver proper (no North Van, Burnaby, or Richmond)`)
+  }
+  const dietary = userPrefs.dietary as string[] | undefined
+  if (dietary?.length) {
+    prefsLines.push(`- Dietary needs: ${dietary.join(', ')} — do NOT suggest incompatible food venues`)
+  }
+  if (userPrefs.drinks_alcohol === false) {
+    prefsLines.push(`- They do not drink alcohol — avoid bars and wine-focused venues`)
+  }
+  if (userPrefs.activity_level) {
+    prefsLines.push(`- Activity level: ${userPrefs.activity_level}`)
+  }
+  if (userPrefs.relationship_stage) {
+    prefsLines.push(`- Relationship stage: ${userPrefs.relationship_stage}`)
+  }
+  const repPref = userPrefs.repetition_preference as number | undefined
+  if (repPref !== undefined && repPref !== 0) {
+    if (repPref <= -1) prefsLines.push(`- Prefer new/unexplored locations over familiar favourites`)
+    if (repPref >= 1)  prefsLines.push(`- Prefer familiar, well-loved neighbourhoods over new ones`)
+  }
+  const partnerName = userPrefs.partner_name as string | undefined
+  if (partnerName) {
+    prefsLines.push(`- Partner's name: ${partnerName} (you may reference them by name in notes)`)
+  }
+  const prefsSection = prefsLines.length
+    ? `\nUser preferences (must be respected):\n${prefsLines.join('\n')}`
+    : ''
 
   // 2. Gemini — generate the date plan
+  // Use user's max_travel_minutes pref for the proximity rule (default 15)
+  const maxWalkMin = userPrefs.max_travel_minutes ?? 15
+  const anchorNeighbourhood = neighbourhood === 'Anywhere'
+    ? `Pick whichever single Vancouver neighbourhood best fits the vibe and date type, then keep every stop within that neighbourhood.`
+    : `All stops must be in or immediately adjacent to ${neighbourhood}.`
+
   const prompt = `You are an expert Vancouver date night planner. Generate a specific, realistic date plan using real Vancouver venues.
 
 Preferences:
@@ -118,7 +177,14 @@ Preferences:
 - Neighbourhood preference: ${neighbourhood}
 - Date type: ${type}
 - Current weather: ${weather.temp}°C, ${weather.condition}
-${weather.isRainy ? '- Note: It is rainy — prefer indoor venues or covered patios' : ''}
+${weather.isRainy ? '- Note: It is rainy — prefer indoor venues or covered patios' : ''}${prefsSection}
+
+PROXIMITY RULES (critical — do not violate):
+- ${anchorNeighbourhood}
+- Every stop must be within a ${maxWalkMin}-minute walk of the previous stop.
+- Do NOT pick stops in different parts of the city (e.g. one in North Vancouver and one in Gastown is forbidden).
+- If you cannot find 2–3 good stops within walking distance of each other for this vibe, pick a different neighbourhood that does have walkable options.
+- The first stop anchors the location. All subsequent stops must be reachable on foot in ≤${maxWalkMin} min from the prior stop.
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code fences):
 {
@@ -140,10 +206,9 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no code 
   "estimated_cost_per_person": "$X-Y"
 }
 
-Rules:
+Additional rules:
 - Use 2-3 stops only
 - All venues must be real, currently operating Vancouver businesses
-- Stops should be geographically close to minimize travel
 - Be specific: name dishes, drinks, or activities to try
 - Respect the budget strictly
 - Account for the weather (rain = indoor preference)

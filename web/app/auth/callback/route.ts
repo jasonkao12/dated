@@ -15,6 +15,22 @@ export async function GET(request: NextRequest) {
       if (type === 'recovery') {
         return NextResponse.redirect(`${origin}/auth/reset-password`)
       }
+
+      // New signup — check if onboarding is needed
+      if (next === '/' || next === '') {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', user.id)
+            .single()
+          if (!profile?.onboarding_completed) {
+            return NextResponse.redirect(`${origin}/onboarding`)
+          }
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
