@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     const firstName = profile.full_name?.split(' ')[0] || profile.username || 'there'
 
     const { error } = await resend.emails.send({
-      from: 'Jason at Dated <hello@getdated.app>',
+      from: 'Jason at Dated <support@getdated.app>',
       to: user.email,
       subject: 'Your first review is waiting',
       html: `
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
     const firstName = profile.full_name?.split(' ')[0] || profile.username || 'there'
 
     const { error } = await resend.emails.send({
-      from: 'Jason at Dated <hello@getdated.app>',
+      from: 'Jason at Dated <support@getdated.app>',
       to: user.email,
       subject: 'Did you know about Date Builder?',
       html: `

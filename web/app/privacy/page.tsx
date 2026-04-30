@@ -20,7 +20,7 @@ export default function PrivacyPage() {
 
           <section className="space-y-2">
             <h2 className="text-xl font-bold">1. Who we are</h2>
-            <p className="text-muted-foreground">Dated (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) is a date review platform for couples, operated from Vancouver, BC, Canada. You can reach us at <a href="mailto:hello@getdated.app" className="text-primary hover:underline">hello@getdated.app</a>.</p>
+            <p className="text-muted-foreground">Dated (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) is a date review platform for couples, operated from Vancouver, BC, Canada. You can reach us at <a href="mailto:support@getdated.app" className="text-primary hover:underline">support@getdated.app</a>.</p>
           </section>
 
           <section className="space-y-2">
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
 
           <section className="space-y-2">
             <h2 className="text-xl font-bold">6. Your rights</h2>
-            <p className="text-muted-foreground">You may request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:hello@getdated.app" className="text-primary hover:underline">hello@getdated.app</a>. You can delete your account directly from your profile settings.</p>
+            <p className="text-muted-foreground">You may request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:support@getdated.app" className="text-primary hover:underline">support@getdated.app</a>. You can delete your account directly from your profile settings.</p>
           </section>
 
           <section className="space-y-2">
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
 
           <section className="space-y-2">
             <h2 className="text-xl font-bold">10. Contact</h2>
-            <p className="text-muted-foreground">Questions about this policy? Email us at <a href="mailto:hello@getdated.app" className="text-primary hover:underline">hello@getdated.app</a>.</p>
+            <p className="text-muted-foreground">Questions about this policy? Email us at <a href="mailto:support@getdated.app" className="text-primary hover:underline">support@getdated.app</a>.</p>
           </section>
         </div>
 

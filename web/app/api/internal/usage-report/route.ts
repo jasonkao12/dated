@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { COST_ESTIMATES } from '@/lib/usage'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM = process.env.FROM_EMAIL ?? 'Dated <hello@getdated.app>'
+const FROM = process.env.FROM_EMAIL ?? 'Dated <support@getdated.app>'
 const ADMIN_EMAIL = 'jason@getdated.app'
 
 // POST /api/internal/usage-report — daily usage digest

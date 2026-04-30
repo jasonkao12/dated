@@ -8,7 +8,7 @@ export function SiteFooter() {
         <nav className="flex items-center gap-4">
           <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
           <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
-          <a href="mailto:hello@getdated.app" className="hover:text-foreground transition-colors">Contact</a>
+          <a href="mailto:support@getdated.app" className="hover:text-foreground transition-colors">Contact</a>
         </nav>
       </div>
     </footer>

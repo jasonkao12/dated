@@ -89,7 +89,7 @@ export default function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-xl font-bold">11. Contact</h2>
-            <p className="text-muted-foreground">Questions? Email us at <a href="mailto:hello@getdated.app" className="text-primary hover:underline">hello@getdated.app</a>.</p>
+            <p className="text-muted-foreground">Questions? Email us at <a href="mailto:support@getdated.app" className="text-primary hover:underline">support@getdated.app</a>.</p>
           </section>
 
         </div>

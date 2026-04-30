@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { logApiUsage } from '@/lib/usage'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM = process.env.FROM_EMAIL ?? 'Dated <hello@getdated.app>'
+const FROM = process.env.FROM_EMAIL ?? 'Dated <support@getdated.app>'
 
 // POST /api/push/digest — send unread notification digests to all users
 // Call this on a schedule (e.g., daily via cron or Vercel cron)

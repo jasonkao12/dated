@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     const firstName = profile.full_name?.split(' ')[0] || profile.username || 'there'
 
     const { error: emailError } = await resend.emails.send({
-      from: 'Jason at Dated <hello@getdated.app>',
+      from: 'Jason at Dated <support@getdated.app>',
       to: user.email,
       subject: 'Welcome to Dated 👋',
       html: `
