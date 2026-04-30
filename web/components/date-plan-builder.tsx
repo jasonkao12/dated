@@ -18,19 +18,39 @@ type Stop = {
   lng: number | null
 }
 
+export type InitialPlanData = {
+  planId: string
+  planSlug: string
+  title: string
+  description: string
+  status: 'saved' | 'planned' | 'completed'
+  visitedOn: string
+  isPublic: boolean
+  isDraft: boolean
+  stops: Stop[]
+}
+
 function newStop(id: string): Stop {
   return { id, place_name: '', notes: '', duration_minutes: '', google_place_id: '', address: '', lat: null, lng: null }
 }
 
-export function DatePlanBuilder({ userId }: { userId: string }) {
+export function DatePlanBuilder({
+  userId,
+  initialData,
+}: {
+  userId: string
+  initialData?: InitialPlanData
+}) {
   const router = useRouter()
   const supabase = createClient()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [status, setStatus] = useState<'saved' | 'planned' | 'completed'>('planned')
-  const [visitedOn, setVisitedOn] = useState('')
-  const [isPublic, setIsPublic] = useState(true)
-  const [stops, setStops] = useState<Stop[]>([newStop('1')])
+  const isEditMode = !!initialData
+
+  const [title, setTitle] = useState(initialData?.title ?? '')
+  const [description, setDescription] = useState(initialData?.description ?? '')
+  const [status, setStatus] = useState<'saved' | 'planned' | 'completed'>(initialData?.status ?? 'planned')
+  const [visitedOn, setVisitedOn] = useState(initialData?.visitedOn ?? '')
+  const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true)
+  const [stops, setStops] = useState<Stop[]>(initialData?.stops.length ? initialData.stops : [newStop('1')])
   const [error, setError] = useState('')
   const [saving, startTransition] = useTransition()
 
@@ -68,31 +88,62 @@ export function DatePlanBuilder({ userId }: { userId: string }) {
     } : s))
   }
 
-  function handleSave() {
+  function handleSave(isDraft = false) {
     if (!title.trim()) { setError('Title is required.'); return }
     setError('')
 
     startTransition(async () => {
-      const slug = title.trim().toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 5)
+      let planId: string
+      let planSlug: string
 
-      const { data: plan, error: planErr } = await supabase
-        .from('date_plans')
-        .insert({
-          user_id: userId,
-          title: title.trim(),
-          description: description.trim() || null,
-          slug,
-          status,
-          visited_on: visitedOn || null,
-          is_public: isPublic,
-        })
-        .select('id, slug')
-        .single()
+      if (isEditMode && initialData) {
+        // Update existing plan
+        const { error: updErr } = await supabase
+          .from('date_plans')
+          .update({
+            title: title.trim(),
+            description: description.trim() || null,
+            status,
+            visited_on: visitedOn || null,
+            is_public: isDraft ? false : isPublic,
+            is_draft: isDraft,
+          })
+          .eq('id', initialData.planId)
+          .eq('user_id', userId)
+        if (updErr) { setError(updErr.message); return }
+        // Clear old stops for re-insert
+        await supabase.from('date_stops').delete().eq('date_plan_id', initialData.planId)
+        planId = initialData.planId
+        planSlug = initialData.planSlug
+      } else {
+        // Create new plan
+        const slug = title.trim().toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 5)
 
-      if (planErr || !plan) { setError(planErr?.message ?? 'Failed to save.'); return }
+        const { data: plan, error: planErr } = await supabase
+          .from('date_plans')
+          .insert({
+            user_id: userId,
+            title: title.trim(),
+            description: description.trim() || null,
+            slug,
+            status,
+            visited_on: visitedOn || null,
+            is_public: isDraft ? false : isPublic,
+            is_draft: isDraft,
+          })
+          .select('id, slug')
+          .single()
+
+        if (planErr || !plan) { setError(planErr?.message ?? 'Failed to save.'); return }
+        planId = plan.id
+        planSlug = plan.slug
+      }
+
+      // Fake plan object for stop insertion below
+      const plan = { id: planId, slug: planSlug }
 
       const validStops = stops.filter(s => s.place_name.trim())
       if (validStops.length > 0) {
@@ -139,7 +190,11 @@ export function DatePlanBuilder({ userId }: { userId: string }) {
         }
       }
 
-      router.push(`/plan/${plan.slug}`)
+      if (isDraft) {
+        router.push('/profile')
+      } else {
+        router.push(`/plan/${plan.slug}`)
+      }
       router.refresh()
     })
   }
@@ -254,13 +309,22 @@ export function DatePlanBuilder({ userId }: { userId: string }) {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-      >
-        {saving ? 'Saving…' : 'Save date plan'}
-      </button>
+      <div className="flex gap-3">
+        <button
+          onClick={() => handleSave(true)}
+          disabled={saving}
+          className="flex-1 rounded-xl border border-border py-3.5 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-colors"
+        >
+          {saving ? 'Saving…' : 'Save as draft'}
+        </button>
+        <button
+          onClick={() => handleSave(false)}
+          disabled={saving}
+          className="flex-[2] rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        >
+          {saving ? 'Saving…' : isEditMode ? 'Update plan' : 'Save date plan'}
+        </button>
+      </div>
     </div>
   )
 }

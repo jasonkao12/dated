@@ -7,6 +7,7 @@ import { StarRating } from '@/components/star-rating'
 import { DateHeatmap } from '@/components/date-heatmap'
 import { AchievementBadges } from '@/components/achievement-badges'
 import { FollowButton } from '@/components/follow-button'
+import { DraftsSection, type DraftReview, type DraftPlan } from '@/components/drafts-section'
 import { Settings } from 'lucide-react'
 
 type Props = { params: Promise<{ username: string }> }
@@ -55,16 +56,37 @@ export default async function UserProfilePage({ params }: Props) {
 
   const reviews = (rawReviews ?? []) as unknown as ReviewCardData[]
 
-  // 3. Fetch date plans (only for own profile)
+  // 3. Fetch date plans + drafts (only for own profile)
   let datePlans: { id: string; title: string; slug: string; status: string; visited_on: string | null; date_stops: { count: number }[] }[] = []
+  let draftReviews: DraftReview[] = []
+  let draftPlans: DraftPlan[] = []
+
   if (isOwnProfile) {
-    const { data: plans } = await supabase
-      .from('date_plans')
-      .select('id, title, slug, status, visited_on, date_stops(count)')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(20)
-    datePlans = (plans ?? []) as typeof datePlans
+    const [plansRes, draftReviewsRes, draftPlansRes] = await Promise.all([
+      supabase
+        .from('date_plans')
+        .select('id, title, slug, status, visited_on, date_stops(count)')
+        .eq('user_id', profile.id)
+        .eq('is_draft', false)
+        .order('created_at', { ascending: false })
+        .limit(20),
+      supabase
+        .from('reviews')
+        .select('id, slug, title, rating_overall, created_at')
+        .eq('user_id', profile.id)
+        .eq('is_draft', true)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('date_plans')
+        .select('id, slug, title, status, created_at, date_stops(count)')
+        .eq('user_id', profile.id)
+        .eq('is_draft', true)
+        .order('created_at', { ascending: false }),
+    ])
+
+    datePlans    = (plansRes.data ?? []) as typeof datePlans
+    draftReviews = (draftReviewsRes.data ?? []) as DraftReview[]
+    draftPlans   = (draftPlansRes.data ?? []) as DraftPlan[]
   }
 
   // 3. Aggregate stats
@@ -196,6 +218,11 @@ export default async function UserProfilePage({ params }: Props) {
             <div className="rounded-2xl bg-card border border-border p-5">
               <DateHeatmap visitedDates={visitedDates} />
             </div>
+          )}
+
+          {/* Drafts — owner only */}
+          {isOwnProfile && (
+            <DraftsSection reviews={draftReviews} plans={draftPlans} />
           )}
 
           {/* My Date Plans — owner only */}

@@ -46,6 +46,7 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
 
   const tags = formData.getAll('tags') as string[]
   const categories = formData.getAll('categories') as string[]
+  const is_draft = formData.get('is_draft') === 'true'
 
   // 3. Validate
   const fieldErrors: Record<string, string> = {}
@@ -118,7 +119,8 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
       rating_vibe,
       place_id: placeId,
       user_id: user.id,
-      is_public: true,
+      is_public: !is_draft,
+      is_draft,
     })
     .select('id')
     .single()
@@ -154,6 +156,7 @@ export async function createReview(_prev: ReviewState, formData: FormData): Prom
   }
 
   // 8. Redirect
+  if (is_draft) redirect('/profile')
   redirect(`/r/${slug}`)
 }
 
@@ -313,6 +316,7 @@ export type DateReviewInput = {
   tags: string[]
   categories: string[]
   is_public: boolean
+  is_draft: boolean
   venue_reviews: VenueReviewInput[]
 }
 
@@ -340,7 +344,8 @@ export async function createDateReview(
       visited_on: input.visited_on || null,
       rating_overall: input.rating_overall,
       rating_vibe: input.rating_vibe,
-      is_public: input.is_public,
+      is_public: input.is_draft ? false : input.is_public,
+      is_draft: input.is_draft,
       slug,
     })
     .select('id, slug')

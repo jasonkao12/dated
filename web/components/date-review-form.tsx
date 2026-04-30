@@ -157,9 +157,9 @@ export function DateReviewForm({
     setVenueStates(prev => prev.map((v, i) => i === idx ? { ...v, [field]: value } : v))
   }
 
-  function handleSubmit() {
+  function handleSubmit(isDraft = false) {
     if (!title.trim()) { setError('Title is required'); return }
-    if (!ratingOverall) { setError('Please add an overall rating'); return }
+    if (!isDraft && !ratingOverall) { setError('Please add an overall rating'); return }
     setError('')
 
     startTransition(async () => {
@@ -173,6 +173,7 @@ export function DateReviewForm({
         tags,
         categories: selectedCategories,
         is_public: isPublic,
+        is_draft: isDraft,
         venue_reviews: venueOpen
           ? venueStates.map(v => ({
               place_id: v.place_id,
@@ -185,6 +186,8 @@ export function DateReviewForm({
 
       if (result.error) {
         setError(result.error)
+      } else if (isDraft) {
+        router.push('/profile')
       } else {
         router.push(`/r/${result.slug}`)
       }
@@ -369,14 +372,24 @@ export function DateReviewForm({
         <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>
       )}
 
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={isPending}
-        className="w-full rounded-2xl bg-primary py-3 text-base font-bold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
-      >
-        {isPending ? 'Posting…' : 'Post Review'}
-      </button>
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={() => handleSubmit(true)}
+          disabled={isPending}
+          className="flex-1 rounded-2xl border border-border py-3 text-base font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-60"
+        >
+          {isPending ? 'Saving…' : 'Save as draft'}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSubmit(false)}
+          disabled={isPending}
+          className="flex-[2] rounded-2xl bg-primary py-3 text-base font-bold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+        >
+          {isPending ? 'Posting…' : 'Post Review'}
+        </button>
+      </div>
     </div>
   )
 }

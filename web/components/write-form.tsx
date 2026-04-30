@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useState, useRef } from 'react'
 import { RatingInput } from '@/components/rating-input'
 import { PlacesAutocomplete } from '@/components/places-autocomplete'
 import { createReview, type ReviewState } from '@/app/actions/review'
@@ -43,6 +43,13 @@ export function WriteForm() {
   const [state, formAction, isPending] = useActionState(createReview, {} as ReviewState)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [suggesting, setSuggesting] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
+  const isDraftRef = useRef<HTMLInputElement>(null)
+
+  function handleSaveAsDraft() {
+    if (isDraftRef.current) isDraftRef.current.value = 'true'
+    formRef.current?.requestSubmit()
+  }
 
   function toggleCategory(name: string) {
     setSelectedCategories(prev =>
@@ -76,7 +83,8 @@ export function WriteForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form ref={formRef} action={formAction} className="space-y-6">
+      <input ref={isDraftRef} type="hidden" name="is_draft" value="false" />
       {/* Section 1 — Where */}
       <section className="rounded-2xl bg-card border border-border p-6 space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -188,13 +196,23 @@ export function WriteForm() {
         <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{state.error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="w-full rounded-2xl bg-primary py-3 text-base font-bold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
-      >
-        {isPending ? 'Posting…' : 'Post Review'}
-      </button>
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={handleSaveAsDraft}
+          disabled={isPending}
+          className="flex-1 rounded-2xl border border-border py-3 text-base font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-60"
+        >
+          {isPending ? 'Saving…' : 'Save as draft'}
+        </button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="flex-[2] rounded-2xl bg-primary py-3 text-base font-bold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+        >
+          {isPending ? 'Posting…' : 'Post Review'}
+        </button>
+      </div>
     </form>
   )
 }
