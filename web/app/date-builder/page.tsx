@@ -35,12 +35,20 @@ export default async function DateBuilderPage() {
             <h1 className="text-3xl font-extrabold text-foreground">Date Builder</h1>
             <p className="text-sm text-muted-foreground mt-1">Plan multi-stop date itineraries</p>
           </div>
-          <Link
-            href="/date-builder/new"
-            className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            + New plan
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/date-builder/choose"
+              className="rounded-xl border border-primary px-4 py-2.5 text-sm font-bold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
+            >
+              ✨ Choose for me
+            </Link>
+            <Link
+              href="/date-builder/new"
+              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              + New plan
+            </Link>
+          </div>
         </div>
 
         {plans && plans.length > 0 ? (
@@ -91,12 +99,20 @@ export default async function DateBuilderPage() {
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">
               Build multi-stop itineraries, share them with your partner, and revisit the highlights.
             </p>
-            <Link
-              href="/date-builder/new"
-              className="inline-block rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Plan your first date
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/date-builder/choose"
+                className="rounded-xl border border-primary px-6 py-2.5 text-sm font-bold text-primary hover:bg-primary/10 transition-colors"
+              >
+                ✨ Choose a date for me
+              </Link>
+              <Link
+                href="/date-builder/new"
+                className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Build my own plan
+              </Link>
+            </div>
           </div>
         )}
       </main>
