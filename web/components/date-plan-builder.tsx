@@ -3,13 +3,23 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { X, Plus, GripVertical } from 'lucide-react'
+import { X, Plus } from 'lucide-react'
+import { PlacesAutocomplete, type PlaceDetails } from '@/components/places-autocomplete'
 
 type Stop = {
   id: string           // local temp id
   place_name: string
   notes: string
   duration_minutes: string
+  // enriched from Places API
+  google_place_id: string
+  address: string
+  lat: number | null
+  lng: number | null
+}
+
+function newStop(id: string): Stop {
+  return { id, place_name: '', notes: '', duration_minutes: '', google_place_id: '', address: '', lat: null, lng: null }
 }
 
 export function DatePlanBuilder({ userId }: { userId: string }) {
@@ -20,20 +30,42 @@ export function DatePlanBuilder({ userId }: { userId: string }) {
   const [status, setStatus] = useState<'saved' | 'planned' | 'completed'>('planned')
   const [visitedOn, setVisitedOn] = useState('')
   const [isPublic, setIsPublic] = useState(true)
-  const [stops, setStops] = useState<Stop[]>([{ id: '1', place_name: '', notes: '', duration_minutes: '' }])
+  const [stops, setStops] = useState<Stop[]>([newStop('1')])
   const [error, setError] = useState('')
   const [saving, startTransition] = useTransition()
 
   function addStop() {
-    setStops(prev => [...prev, { id: String(Date.now()), place_name: '', notes: '', duration_minutes: '' }])
+    setStops(prev => [...prev, newStop(String(Date.now()))])
   }
 
   function removeStop(id: string) {
     setStops(prev => prev.filter(s => s.id !== id))
   }
 
-  function updateStop(id: string, field: keyof Stop, value: string) {
+  function updateStop(id: string, field: 'notes' | 'duration_minutes', value: string) {
     setStops(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s))
+  }
+
+  function updateStopPlace(id: string, place: PlaceDetails) {
+    setStops(prev => prev.map(s => s.id === id ? {
+      ...s,
+      place_name: place.name,
+      google_place_id: place.googlePlaceId,
+      address: place.address,
+      lat: place.lat,
+      lng: place.lng,
+    } : s))
+  }
+
+  function clearStopPlace(id: string) {
+    setStops(prev => prev.map(s => s.id === id ? {
+      ...s,
+      place_name: '',
+      google_place_id: '',
+      address: '',
+      lat: null,
+      lng: null,
+    } : s))
   }
 
   function handleSave() {
@@ -64,12 +96,31 @@ export function DatePlanBuilder({ userId }: { userId: string }) {
 
       const validStops = stops.filter(s => s.place_name.trim())
       if (validStops.length > 0) {
-        // Upsert places and insert stops
         for (let i = 0; i < validStops.length; i++) {
           const s = validStops[i]
           let placeId: string | null = null
 
-          if (s.place_name.trim()) {
+          if (s.google_place_id) {
+            // Known Google Place — upsert by google_place_id
+            const { data: existing } = await supabase
+              .from('places').select('id').eq('google_place_id', s.google_place_id).maybeSingle()
+            if (existing) {
+              placeId = existing.id
+              await supabase.from('places').update({
+                name: s.place_name, address: s.address, lat: s.lat, lng: s.lng,
+              }).eq('id', existing.id)
+            } else {
+              const { data: newPlace } = await supabase.from('places').insert({
+                name: s.place_name,
+                google_place_id: s.google_place_id,
+                address: s.address || null,
+                lat: s.lat,
+                lng: s.lng,
+              }).select('id').single()
+              placeId = newPlace?.id ?? null
+            }
+          } else {
+            // Manual entry — plain name upsert
             const { data: place } = await supabase
               .from('places')
               .upsert({ name: s.place_name.trim(), city: null }, { onConflict: 'name,city' })
@@ -163,19 +214,18 @@ export function DatePlanBuilder({ userId }: { userId: string }) {
         <div className="space-y-3">
           {stops.map((stop, i) => (
             <div key={stop.id} className="rounded-xl border border-border bg-background p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+              <div className="flex items-start gap-2">
+                <span className="flex h-6 w-6 mt-2.5 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
                   {i + 1}
                 </span>
-                <input
-                  type="text"
-                  value={stop.place_name}
-                  onChange={e => updateStop(stop.id, 'place_name', e.target.value)}
-                  placeholder="Place name"
-                  className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
+                <div className="flex-1 min-w-0">
+                  <PlacesAutocomplete
+                    onSelect={place => updateStopPlace(stop.id, place)}
+                    onClear={() => clearStopPlace(stop.id)}
+                  />
+                </div>
                 {stops.length > 1 && (
-                  <button onClick={() => removeStop(stop.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                  <button onClick={() => removeStop(stop.id)} className="mt-2.5 text-muted-foreground hover:text-destructive transition-colors">
                     <X size={16} />
                   </button>
                 )}

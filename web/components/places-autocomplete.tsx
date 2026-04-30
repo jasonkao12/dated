@@ -8,7 +8,7 @@ type Suggestion = {
   secondary: string
 }
 
-type PlaceDetails = {
+export type PlaceDetails = {
   googlePlaceId: string
   name: string
   address: string
@@ -210,7 +210,7 @@ export function PlacesAutocomplete({ initialSelected, onSelect, onClear, error }
                 onMouseDown={e => e.preventDefault()}
                 onClick={() => {
                   setOpen(false)
-                  setSelected({
+                  const manual: PlaceDetails = {
                     googlePlaceId: '',
                     name: query,
                     address: '',
@@ -221,7 +221,9 @@ export function PlacesAutocomplete({ initialSelected, onSelect, onClear, error }
                     phone: null,
                     priceLevel: null,
                     types: [],
-                  })
+                  }
+                  setSelected(manual)
+                  onSelect?.(manual)
                 }}
                 className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
               >
