@@ -293,3 +293,99 @@ export async function deleteReview(reviewId: string): Promise<{ error?: string }
 
   redirect('/my-dates')
 }
+
+// ─── Date-centric review ─────────────────────────────────────────────────────
+
+export type VenueReviewInput = {
+  place_id: string
+  place_name: string
+  rating_overall: number | null
+  body: string
+}
+
+export type DateReviewInput = {
+  plan_id: string
+  title: string
+  body: string
+  visited_on: string
+  rating_overall: number | null
+  rating_vibe: number | null
+  tags: string[]
+  categories: string[]
+  is_public: boolean
+  venue_reviews: VenueReviewInput[]
+}
+
+export async function createDateReview(
+  input: DateReviewInput
+): Promise<{ slug?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  if (!input.title?.trim()) return { error: 'Title is required' }
+  if (!input.plan_id) return { error: 'No date plan selected' }
+
+  const slug = generateSlug(input.title) + '-' + Math.random().toString(36).slice(2, 5)
+
+  // 1. Insert main date review (no place)
+  const { data: review, error: reviewErr } = await supabase
+    .from('reviews')
+    .insert({
+      user_id: user.id,
+      plan_id: input.plan_id,
+      place_id: null,
+      title: input.title.trim(),
+      body: input.body?.trim() || null,
+      visited_on: input.visited_on || null,
+      rating_overall: input.rating_overall,
+      rating_vibe: input.rating_vibe,
+      is_public: input.is_public,
+      slug,
+    })
+    .select('id, slug')
+    .single()
+
+  if (reviewErr || !review) return { error: reviewErr?.message ?? 'Failed to save review' }
+
+  // 2. Tags
+  if (input.tags.length > 0) {
+    const { data: tagRows } = await supabase
+      .from('date_tags').select('id, label').in('label', input.tags)
+    if (tagRows?.length) {
+      await supabase.from('review_tags').insert(
+        tagRows.map(t => ({ review_id: review.id, tag_id: t.id }))
+      )
+    }
+  }
+
+  // 3. Categories
+  if (input.categories.length > 0) {
+    const { data: catRows } = await supabase
+      .from('categories').select('id, name').in('name', input.categories)
+    if (catRows?.length) {
+      await supabase.from('review_categories').insert(
+        catRows.map(c => ({ review_id: review.id, category_id: c.id }))
+      )
+    }
+  }
+
+  // 4. Per-venue reviews (only those with a rating or notes)
+  const filledVenueReviews = input.venue_reviews.filter(v => v.rating_overall || v.body.trim())
+  for (const vr of filledVenueReviews) {
+    const venueSlug = generateSlug(vr.place_name) + '-' + Math.random().toString(36).slice(2, 5)
+    await supabase.from('reviews').insert({
+      user_id: user.id,
+      plan_id: input.plan_id,
+      place_id: vr.place_id,
+      title: `${vr.place_name} — ${input.title.trim()}`,
+      body: vr.body.trim() || null,
+      visited_on: input.visited_on || null,
+      rating_overall: vr.rating_overall,
+      is_public: input.is_public,
+      slug: venueSlug,
+    })
+  }
+
+  return { slug: review.slug }
+}
