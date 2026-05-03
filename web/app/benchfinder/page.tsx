@@ -1,10 +1,8 @@
-import dynamic from 'next/dynamic'
 import type { Bench } from '@/components/bench-map'
+import { BenchClient } from './bench-client'
 
 // No SiteHeader. No links. You found this yourself.
 export const metadata = { title: 'Bench Finder 🪑', robots: 'noindex, nofollow' }
-
-const BenchMap = dynamic(() => import('@/components/bench-map').then(m => m.BenchMap), { ssr: false })
 
 const BENCHES: Bench[] = [
   {
@@ -222,7 +220,7 @@ export default function BenchFinderPage() {
 
         {/* Map */}
         <div className="rounded-2xl overflow-hidden shadow-lg ring-1 ring-zinc-200 dark:ring-zinc-800">
-          <BenchMap benches={BENCHES} />
+          <BenchClient benches={BENCHES} />
         </div>
 
         {/* Bench list */}
