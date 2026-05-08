@@ -60,12 +60,23 @@ export default async function PlacesPage() {
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 py-8 space-y-6">
 
+        {/* Intro — helps search engines index this page */}
+        <div className="rounded-2xl bg-secondary/40 border border-border p-5 space-y-2">
+          <h1 className="text-2xl font-extrabold text-foreground">Date spots in Vancouver</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+            Every place on this map has been visited and reviewed by real couples. Browse restaurants,
+            parks, galleries, rooftops, and hidden gems — all rated for ambiance, food, service, and
+            overall date vibe. Click a pin to see reviews, or scroll the list below to filter by type
+            and price. Know a great spot that&apos;s missing? Log a date and add it to the community map.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {places.length} {places.length === 1 ? 'place' : 'places'} reviewed by the community
+          </p>
+        </div>
+
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold text-foreground">Places</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {places.length} {places.length === 1 ? 'place' : 'places'} reviewed by the community
-            </p>
+            <h2 className="text-xl font-extrabold text-foreground">All places</h2>
           </div>
           <div className="flex items-center gap-3">
             {user && (

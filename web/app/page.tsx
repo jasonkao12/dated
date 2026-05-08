@@ -69,8 +69,10 @@ export default async function HomePage() {
             <span className="text-primary">date</span> starts here
           </h1>
           <p className="text-lg text-muted-foreground">
-            Discover top-rated date spots, share your own experiences,<br className="hidden md:block" />
-            and plan unforgettable dates for every occasion.
+            Dated is the date review app for couples. Discover top-rated spots,
+            share your own experiences, and use our AI date planner to find
+            something perfect for tonight — no more staring at Google Maps
+            and hoping for the best.
           </p>
           <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center">
             <Link

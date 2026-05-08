@@ -6,9 +6,10 @@ export function SiteFooter() {
       <div className="mx-auto max-w-5xl px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <p>© {new Date().getFullYear()} Dated · Vancouver, BC</p>
         <nav className="flex items-center gap-4">
+          <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
           <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
           <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
-          <a href="mailto:support@getdated.app" className="hover:text-foreground transition-colors">Contact</a>
+          <Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link>
         </nav>
       </div>
     </footer>
