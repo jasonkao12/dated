@@ -18,12 +18,19 @@ BEGIN
     RAISE EXCEPTION 'User not found. Check the email address in this script.';
   END IF;
 
+  -- Helper pattern for each place:
+  --   1. Try to find existing row by name + city
+  --   2. If not found, insert it
+  -- This avoids needing a unique constraint.
+
   -- ── 1. Cactus Club Cafe Coal Harbour ───────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Cactus Club Cafe Coal Harbour', 'Vancouver', 'Canada', 'restaurant',
-          49.28887, -123.12138, '1085 Canada Pl, Vancouver, BC V6E 3L1', 3)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p1;
+  SELECT id INTO p1 FROM public.places WHERE name = 'Cactus Club Cafe Coal Harbour' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Cactus Club Cafe Coal Harbour', 'Vancouver', 'Canada', 'restaurant',
+            49.28887, -123.12138, '1085 Canada Pl, Vancouver, BC V6E 3L1', 3)
+    RETURNING id INTO p1;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -35,11 +42,13 @@ BEGIN
     p1, 5, 5, 4, 5, 3, 5, '2024-08-15', true, false);
 
   -- ── 2. Fired Up Pottery Studio ─────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Fired Up Pottery Studio', 'Vancouver', 'Canada', 'experience',
-          49.27330, -123.10850, '428 W 8th Ave, Vancouver, BC', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p2;
+  SELECT id INTO p2 FROM public.places WHERE name = 'Fired Up Pottery Studio' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Fired Up Pottery Studio', 'Vancouver', 'Canada', 'experience',
+            49.27330, -123.10850, '428 W 8th Ave, Vancouver, BC', 2)
+    RETURNING id INTO p2;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -51,11 +60,13 @@ BEGIN
     p2, 5, 4, 5, 4, 5, '2024-02-14', true, false);
 
   -- ── 3. Granville Island Public Market ──────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Granville Island Public Market', 'Vancouver', 'Canada', 'market',
-          49.27210, -123.13450, '1669 Johnston St, Vancouver, BC V6H 3R9', 1)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p3;
+  SELECT id INTO p3 FROM public.places WHERE name = 'Granville Island Public Market' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Granville Island Public Market', 'Vancouver', 'Canada', 'market',
+            49.27210, -123.13450, '1669 Johnston St, Vancouver, BC V6H 3R9', 1)
+    RETURNING id INTO p3;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -67,11 +78,13 @@ BEGIN
     p3, 5, 5, 5, 5, 5, '2024-05-18', true, false);
 
   -- ── 4. Marquis Wine Cellars ────────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Marquis Wine Cellars', 'Vancouver', 'Canada', 'bar',
-          49.26680, -123.14520, '1034 Davie St, Vancouver, BC V6E 1M3', 3)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p4;
+  SELECT id INTO p4 FROM public.places WHERE name = 'Marquis Wine Cellars' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Marquis Wine Cellars', 'Vancouver', 'Canada', 'bar',
+            49.26680, -123.14520, '1034 Davie St, Vancouver, BC V6E 1M3', 3)
+    RETURNING id INTO p4;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -83,11 +96,13 @@ BEGIN
     p4, 4, 4, 5, 4, 4, '2024-10-12', true, false);
 
   -- ── 5. The Dirty Apron Cooking School ─────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('The Dirty Apron Cooking School', 'Vancouver', 'Canada', 'experience',
-          49.27990, -123.10190, '540 Beatty St, Vancouver, BC V6B 2L3', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p5;
+  SELECT id INTO p5 FROM public.places WHERE name = 'The Dirty Apron Cooking School' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('The Dirty Apron Cooking School', 'Vancouver', 'Canada', 'experience',
+            49.27990, -123.10190, '540 Beatty St, Vancouver, BC V6B 2L3', 2)
+    RETURNING id INTO p5;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -98,9 +113,7 @@ BEGIN
     'The couples cooking class runs about three hours and you eat everything you make at the end, which is the right incentive structure. We did a pasta night — gnocchi, cacio e pepe, a simple green salad — and both came away with skills we''ve actually used since. The chef instructors are funny and efficient: they keep the energy up without turning it into a performance. Kitchen stations are well-equipped and the wine pours are relaxed. It''s on the pricier side but it''s a full evening of activity, dinner, and something to talk about — better value than most restaurants at the same price point.',
     p5, 5, 4, 5, 5, 4, 5, '2024-03-22', true, false);
 
-  -- ── 6. Stargazing — no venue (mountain road above the city) ───────────────
-  -- place_id intentionally NULL — it's a "drive somewhere dark and look up" date
-
+  -- ── 6. Stargazing — no venue ───────────────────────────────────────────────
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
      rating_overall, rating_vibe,
@@ -111,11 +124,13 @@ BEGIN
     NULL, 5, 5, '2024-07-20', true, false);
 
   -- ── 7. Vancouver Art Gallery ───────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Vancouver Art Gallery', 'Vancouver', 'Canada', 'gallery',
-          49.28268, -123.12071, '750 Hornby St, Vancouver, BC V6Z 2H7', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p6;
+  SELECT id INTO p6 FROM public.places WHERE name = 'Vancouver Art Gallery' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Vancouver Art Gallery', 'Vancouver', 'Canada', 'gallery',
+            49.28268, -123.12071, '750 Hornby St, Vancouver, BC V6Z 2H7', 2)
+    RETURNING id INTO p6;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -127,11 +142,13 @@ BEGIN
     p6, 4, 5, 3, 3, 4, '2024-11-03', true, false);
 
   -- ── 8. Absolute Spa at Century Plaza ──────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Absolute Spa at Century Plaza', 'Vancouver', 'Canada', 'wellness',
-          49.28228, -123.12112, '1015 Burrard St, Vancouver, BC V6Z 1Y5', 4)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p7;
+  SELECT id INTO p7 FROM public.places WHERE name = 'Absolute Spa at Century Plaza' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Absolute Spa at Century Plaza', 'Vancouver', 'Canada', 'wellness',
+            49.28228, -123.12112, '1015 Burrard St, Vancouver, BC V6Z 1Y5', 4)
+    RETURNING id INTO p7;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -143,11 +160,13 @@ BEGIN
     p7, 5, 5, 5, 3, 5, '2024-09-07', true, false);
 
   -- ── 9. Richmond Night Market ──────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Richmond Night Market', 'Richmond', 'Canada', 'market',
-          49.16870, -123.13780, '8351 River Rd, Richmond, BC V6X 1Y4', 1)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p8;
+  SELECT id INTO p8 FROM public.places WHERE name = 'Richmond Night Market' AND city = 'Richmond';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Richmond Night Market', 'Richmond', 'Canada', 'market',
+            49.16870, -123.13780, '8351 River Rd, Richmond, BC V6X 1Y4', 1)
+    RETURNING id INTO p8;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -159,11 +178,13 @@ BEGIN
     p8, 5, 5, 5, 5, '2024-06-29', true, false);
 
   -- ── 10. Deep Cove Kayak Centre ────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Deep Cove Kayak Centre', 'North Vancouver', 'Canada', 'experience',
-          49.32850, -122.94890, '2156 Banbury Rd, North Vancouver, BC V7G 1W7', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p9;
+  SELECT id INTO p9 FROM public.places WHERE name = 'Deep Cove Kayak Centre' AND city = 'North Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Deep Cove Kayak Centre', 'North Vancouver', 'Canada', 'experience',
+            49.32850, -122.94890, '2156 Banbury Rd, North Vancouver, BC V7G 1W7', 2)
+    RETURNING id INTO p9;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -175,11 +196,13 @@ BEGIN
     p9, 5, 5, 4, 5, '2024-09-13', true, false);
 
   -- ── 11. Frankie's Jazz Club ───────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Frankie''s Jazz Club', 'Vancouver', 'Canada', 'bar',
-          49.28006, -123.11818, '765 Beatty St, Vancouver, BC V6B 2M4', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p10;
+  SELECT id INTO p10 FROM public.places WHERE name = 'Frankie''s Jazz Club' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Frankie''s Jazz Club', 'Vancouver', 'Canada', 'bar',
+            49.28006, -123.11818, '765 Beatty St, Vancouver, BC V6B 2M4', 2)
+    RETURNING id INTO p10;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -190,12 +213,14 @@ BEGIN
     'We stumbled into a Tuesday night set expecting a mostly empty room and got a packed house and a quartet that played for two and a half hours without a weak moment. The room is small, the tables are close together in the way that actually encourages conversation, and the old-fashioned is properly made. There''s a cover charge on weekends that''s completely worth it — but Tuesday sets are often free or cheap and the quality doesn''t drop. This is the kind of place that makes you feel like you''re in a different city, in a good way. Arrive early; there''s no reserving tables.',
     p10, 5, 5, 4, 4, 5, '2024-10-22', true, false);
 
-  -- ── 12. Tofino (coastal weekend) ──────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Long Beach Lodge Resort', 'Tofino', 'Canada', 'hotel',
-          49.10950, -125.77320, '1441 Pacific Rim Hwy, Tofino, BC V0R 2Z0', 4)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p11;
+  -- ── 12. Long Beach Lodge Resort, Tofino ───────────────────────────────────
+  SELECT id INTO p11 FROM public.places WHERE name = 'Long Beach Lodge Resort' AND city = 'Tofino';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Long Beach Lodge Resort', 'Tofino', 'Canada', 'hotel',
+            49.10950, -125.77320, '1441 Pacific Rim Hwy, Tofino, BC V0R 2Z0', 4)
+    RETURNING id INTO p11;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -207,11 +232,13 @@ BEGIN
     p11, 5, 5, 4, 5, 3, 5, '2024-05-03', true, false);
 
   -- ── 13. Escape Hour Vancouver ─────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Escape Hour Vancouver', 'Vancouver', 'Canada', 'experience',
-          49.28220, -123.11510, '570 Dunsmuir St, Vancouver, BC V6B 1Y1', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p12;
+  SELECT id INTO p12 FROM public.places WHERE name = 'Escape Hour Vancouver' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Escape Hour Vancouver', 'Vancouver', 'Canada', 'experience',
+            49.28220, -123.11510, '570 Dunsmuir St, Vancouver, BC V6B 1Y1', 2)
+    RETURNING id INTO p12;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -222,12 +249,14 @@ BEGIN
     'We booked the heist-themed room, which the staff correctly described as medium difficulty, and it turned out to be a perfect level — challenging enough that we had to actually work together, not so hard that anyone got frustrated. The game master gave a good briefing and the hint system was unobtrusive. The room design was more detailed than we expected and the lock puzzles actually made sense when you solved them, which isn''t always true of escape rooms. Strong date activity for couples who are competitive in a compatible way. If you split immediately into independent problem-solving without communicating, learn something from that.',
     p12, 4, 4, 4, 5, '2024-01-27', true, false);
 
-  -- ── 14. VanDusen Botanical Garden ────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('VanDusen Botanical Garden', 'Vancouver', 'Canada', 'park',
-          49.24170, -123.13330, '5251 Oak St, Vancouver, BC V6M 4H1', 1)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p13;
+  -- ── 14. VanDusen Botanical Garden ─────────────────────────────────────────
+  SELECT id INTO p13 FROM public.places WHERE name = 'VanDusen Botanical Garden' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('VanDusen Botanical Garden', 'Vancouver', 'Canada', 'park',
+            49.24170, -123.13330, '5251 Oak St, Vancouver, BC V6M 4H1', 1)
+    RETURNING id INTO p13;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -239,11 +268,13 @@ BEGIN
     p13, 5, 5, 4, 4, '2024-10-05', true, false);
 
   -- ── 15. Brassneck Brewery ─────────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Brassneck Brewery', 'Vancouver', 'Canada', 'bar',
-          49.26350, -123.07940, '2148 Main St, Vancouver, BC V5T 3C4', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p14;
+  SELECT id INTO p14 FROM public.places WHERE name = 'Brassneck Brewery' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Brassneck Brewery', 'Vancouver', 'Canada', 'bar',
+            49.26350, -123.07940, '2148 Main St, Vancouver, BC V5T 3C4', 2)
+    RETURNING id INTO p14;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -254,7 +285,7 @@ BEGIN
     'We went in knowing relatively little about craft beer and the staff were good at reading that and steering us toward approachable things without being patronising. The tasting flight system works well — you build your own from whatever''s on that day, and the rotation is genuinely interesting. The taproom is small and loud on weekends but has a good neighbourhood energy. Food options are limited (they do a few snacks) so eat before. The Passive Aggressive is their flagship and worth starting with. Worth noting: they don''t take reservations and the line can be long after 6pm on Fridays.',
     p14, 4, 4, 3, 4, 4, 4, '2024-09-14', true, false);
 
-  -- ── 16. Backyard movie night — no venue ──────────────────────────────────
+  -- ── 16. Backyard movie night — no venue ───────────────────────────────────
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
      rating_overall, rating_vibe,
@@ -265,11 +296,13 @@ BEGIN
     NULL, 5, 5, '2024-08-03', true, false);
 
   -- ── 17. Harbour Dance Centre ──────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Harbour Dance Centre', 'Vancouver', 'Canada', 'experience',
-          49.27990, -123.11410, '927 Granville St, Vancouver, BC V6Z 1L3', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p17;
+  SELECT id INTO p17 FROM public.places WHERE name = 'Harbour Dance Centre' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Harbour Dance Centre', 'Vancouver', 'Canada', 'experience',
+            49.27990, -123.11410, '927 Granville St, Vancouver, BC V6Z 1L3', 2)
+    RETURNING id INTO p17;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -281,11 +314,13 @@ BEGIN
     p17, 5, 4, 5, 4, 5, '2024-04-19', true, false);
 
   -- ── 18. Prospect Point – Stanley Park ─────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Prospect Point', 'Vancouver', 'Canada', 'park',
-          49.31170, -123.14160, 'Prospect Point, Stanley Park, Vancouver, BC', 1)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p18;
+  SELECT id INTO p18 FROM public.places WHERE name = 'Prospect Point' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Prospect Point', 'Vancouver', 'Canada', 'park',
+            49.31170, -123.14160, 'Prospect Point, Stanley Park, Vancouver, BC', 1)
+    RETURNING id INTO p18;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -297,11 +332,13 @@ BEGIN
     p18, 5, 5, 5, '2024-06-21', true, false);
 
   -- ── 19. Café Medina ───────────────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Café Medina', 'Vancouver', 'Canada', 'restaurant',
-          49.27910, -123.11620, '780 Richards St, Vancouver, BC V6B 3A4', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p19;
+  SELECT id INTO p19 FROM public.places WHERE name = 'Café Medina' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Café Medina', 'Vancouver', 'Canada', 'restaurant',
+            49.27910, -123.11620, '780 Richards St, Vancouver, BC V6B 3A4', 2)
+    RETURNING id INTO p19;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -313,11 +350,13 @@ BEGIN
     p19, 5, 5, 5, 4, 4, 5, '2024-11-16', true, false);
 
   -- ── 20. Quarry Rock Trail ─────────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Quarry Rock Trail', 'North Vancouver', 'Canada', 'park',
-          49.31910, -122.95000, 'Panorama Dr, North Vancouver, BC', 1)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p20;
+  SELECT id INTO p20 FROM public.places WHERE name = 'Quarry Rock Trail' AND city = 'North Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Quarry Rock Trail', 'North Vancouver', 'Canada', 'park',
+            49.31910, -122.95000, 'Panorama Dr, North Vancouver, BC', 1)
+    RETURNING id INTO p20;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -329,11 +368,13 @@ BEGIN
     p20, 5, 5, 5, 5, '2024-09-28', true, false);
 
   -- ── 21. Thunder Bird Karaoke ──────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Thunder Bird Karaoke', 'Vancouver', 'Canada', 'bar',
-          49.28040, -123.12200, '1 W Hastings St, Vancouver, BC V6B 1G6', 2)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p21;
+  SELECT id INTO p21 FROM public.places WHERE name = 'Thunder Bird Karaoke' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Thunder Bird Karaoke', 'Vancouver', 'Canada', 'bar',
+            49.28040, -123.12200, '1 W Hastings St, Vancouver, BC V6B 1G6', 2)
+    RETURNING id INTO p21;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
@@ -345,11 +386,13 @@ BEGIN
     p21, 4, 3, 4, 4, 5, '2024-12-01', true, false);
 
   -- ── 22. Jericho Beach Park ────────────────────────────────────────────────
-  INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
-  VALUES ('Jericho Beach Park', 'Vancouver', 'Canada', 'park',
-          49.27530, -123.19970, 'Jericho Beach, Vancouver, BC V6R 4K5', 1)
-  ON CONFLICT (name, city) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO p22;
+  SELECT id INTO p22 FROM public.places WHERE name = 'Jericho Beach Park' AND city = 'Vancouver';
+  IF NOT FOUND THEN
+    INSERT INTO public.places (name, city, country, place_type, lat, lng, address, price_level)
+    VALUES ('Jericho Beach Park', 'Vancouver', 'Canada', 'park',
+            49.27530, -123.19970, 'Jericho Beach, Vancouver, BC V6R 4K5', 1)
+    RETURNING id INTO p22;
+  END IF;
 
   INSERT INTO public.reviews
     (user_id, slug, title, body, place_id,
